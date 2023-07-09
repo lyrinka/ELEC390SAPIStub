@@ -1,11 +1,17 @@
 package com.example.elec390.sapi.protocol;
 
+import com.example.elec390.sapi.protocol.type.PacketType;
+
 import java.util.Arrays;
 
 public class PacketBase {
 
     private final PacketType packetType;
     private byte[] payload;
+
+    public PacketBase(PacketBase obj) {
+        this(obj.packetType, obj.payload);
+    }
 
     public PacketBase(PacketType packetType) {
         this(packetType, new byte[0]);

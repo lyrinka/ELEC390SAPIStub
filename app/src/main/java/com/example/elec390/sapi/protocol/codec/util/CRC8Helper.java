@@ -1,4 +1,4 @@
-package com.example.elec390.sapi.protocol.codec.impl;
+package com.example.elec390.sapi.protocol.codec.util;
 
 public class CRC8Helper {
 

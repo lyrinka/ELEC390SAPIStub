@@ -1,11 +1,11 @@
 package com.example.elec390.sapi.stubapp;
 
 import com.example.elec390.sapi.protocol.PacketBase;
-import com.example.elec390.sapi.protocol.PacketDirection;
-import com.example.elec390.sapi.protocol.PacketType;
+import com.example.elec390.sapi.protocol.type.PacketDirection;
+import com.example.elec390.sapi.protocol.type.PacketType;
 import com.example.elec390.sapi.protocol.codec.PacketCodecManager;
 import com.example.elec390.sapi.protocol.codec.exception.CodecException;
-import com.example.elec390.sapi.protocol.codec.impl.Base93Helper;
+import com.example.elec390.sapi.protocol.codec.util.Base93Helper;
 
 import org.junit.Assert;
 import org.junit.Test;

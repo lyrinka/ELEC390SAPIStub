@@ -1,14 +1,14 @@
 package com.example.elec390.sapi.protocol.codec.impl;
 
 
-import androidx.core.graphics.PaintKt;
-
 import com.example.elec390.sapi.protocol.PacketBase;
-import com.example.elec390.sapi.protocol.PacketDirection;
-import com.example.elec390.sapi.protocol.PacketType;
+import com.example.elec390.sapi.protocol.type.PacketDirection;
+import com.example.elec390.sapi.protocol.type.PacketType;
 import com.example.elec390.sapi.protocol.codec.IPacketCodec;
 import com.example.elec390.sapi.protocol.codec.exception.CodecException;
 import com.example.elec390.sapi.protocol.codec.exception.PacketFormatException;
+import com.example.elec390.sapi.protocol.codec.util.Base93Helper;
+import com.example.elec390.sapi.protocol.codec.util.CRC8Helper;
 
 public class PacketCodecBase93Impl implements IPacketCodec {
 

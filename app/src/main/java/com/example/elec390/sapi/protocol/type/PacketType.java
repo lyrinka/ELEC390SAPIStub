@@ -1,4 +1,4 @@
-package com.example.elec390.sapi.protocol;
+package com.example.elec390.sapi.protocol.type;
 
 import java.util.Objects;
 
