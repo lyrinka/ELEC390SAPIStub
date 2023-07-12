@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -20,11 +21,13 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import app.uvtracker.sensor.api.ISensor;
 import app.uvtracker.sensor.api.scanner.IScanner;
 import app.uvtracker.sensor.api.SensorAPI;
-import app.uvtracker.sensor.api.exception.BluetoothException;
+import app.uvtracker.sensor.api.exception.transceiver.TransceiverException;
 import app.uvtracker.sensor.api.scanner.IScannedSensor;
 import app.uvtracker.sensor.api.scanner.IScannerCallback;
 
@@ -51,12 +54,17 @@ public class MainActivity extends AppCompatActivity implements IScannerCallback,
         if(this.scanner == null) {
             try {
                 this.scanner = SensorAPI.getInstance().getAndroidBLEScanner(this);
-            } catch (BluetoothException e) {
+            } catch (TransceiverException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        this.listAdapter = new RecyclerViewAdapter();
+        this.listAdapter = new RecyclerViewAdapter((sensor) -> {
+            IntentDataHelper.sensor = sensor;
+            this.stopScanning();
+            this.startActivity(new Intent(this.getApplicationContext(), SensorActivity.class));
+        });
+
         RecyclerView rView = this.findViewById(R.id.main_list_sensors);
         rView.setAdapter(this.listAdapter);
         rView.setLayoutManager(new LinearLayoutManager(this));
@@ -76,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements IScannerCallback,
         this.refreshCounter = 0;
         try {
             this.scanner.startScanning(this);
-        } catch (BluetoothException e) {
+        } catch (TransceiverException e) {
             throw new RuntimeException(e);
         }
         this.run();
@@ -87,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements IScannerCallback,
         btn.setText(this.getString(R.string.main_btn_scan));
         try {
             this.scanner.stopScanning();
-        } catch (BluetoothException e) {
+        } catch (TransceiverException e) {
             throw new RuntimeException(e);
         }
     }
@@ -115,25 +123,41 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private static final int INACTIVE_MS = 4000;
     private static final int REMOVAL_MS = 10000;
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+        @NonNull
         private final View itemView;
-        private int position;
 
-        public ViewHolder(@NonNull View itemView) {
+        @Nullable
+        private ViewContent content;
+
+        @NonNull
+        private final Consumer<ISensor> callback;
+
+        public ViewHolder(@NonNull View itemView, @NonNull Consumer<ISensor> callback) {
             super(itemView);
             this.itemView = itemView;
-            this.position = 0;
+            this.callback = callback;
+            itemView.setOnClickListener(this);
         }
 
-        public void updateContent(int position, ViewContent content) {
-            this.position = position;
+        public void updateContent(@NonNull ViewContent content) {
+            this.content = content;
             content.applyTo(this.itemView);
+        }
+
+        @Override
+        public void onClick(View view) {
+            if(this.content == null) return;
+            this.callback.accept(this.content.getSensor());
         }
 
     }
 
     private static class ViewContent {
+
+        @NonNull
+        private final ISensor sensor;
 
         @NonNull
         private final String address;
@@ -145,7 +169,8 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         private final boolean active;
 
-        public ViewContent(@NonNull String address, @Nullable String name, int rssi, boolean active) {
+        public ViewContent(@NonNull ISensor sensor, @NonNull String address, @Nullable String name, int rssi, boolean active) {
+            this.sensor = sensor;
             this.address = address;
             this.name = name;
             this.rssi = rssi;
@@ -165,13 +190,22 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             rssiText.setTextColor(color);
         }
 
+        @NonNull
+        public ISensor getSensor() {
+            return this.sensor;
+        }
+
     }
 
     @NonNull
     private List<ViewContent> datastore;
 
-    public RecyclerViewAdapter() {
+    @NonNull
+    private final Consumer<ISensor> callback;
+
+    public RecyclerViewAdapter(@NonNull Consumer<ISensor> clickCallback) {
         this.datastore = new ArrayList<>();
+        this.callback = clickCallback;
     }
 
     public void updateDatastore(Collection<? extends IScannedSensor> source) {
@@ -179,6 +213,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         this.datastore = source.stream()
                 .filter(sensor -> currentTime - sensor.lastSeenAt().getTime() < REMOVAL_MS)
                 .map(sensor -> new ViewContent(
+                        sensor.getSensor(),
                         sensor.getSensor().getAddress(),
                         sensor.getSensor().getName(), sensor.getRssi(),
                         currentTime - sensor.lastSeenAt().getTime() < INACTIVE_MS))
@@ -195,13 +230,13 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_main_sensor_item, parent, false));
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_main_sensor_item, parent, false), this.callback);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if(holder instanceof ViewHolder)
-            ((ViewHolder)holder).updateContent(position, this.datastore.get(position));
+            ((ViewHolder)holder).updateContent(this.datastore.get(position));
     }
 
     @Override

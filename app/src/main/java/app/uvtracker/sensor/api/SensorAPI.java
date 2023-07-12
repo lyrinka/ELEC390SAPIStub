@@ -4,7 +4,7 @@ import android.app.Activity;
 
 import java.util.function.BooleanSupplier;
 
-import app.uvtracker.sensor.api.exception.BluetoothException;
+import app.uvtracker.sensor.api.exception.transceiver.TransceiverException;
 import app.uvtracker.sensor.api.scanner.IScanner;
 import app.uvtracker.sensor.pdi.android.scanner.AndroidBLEScanner;
 
@@ -22,11 +22,11 @@ public final class SensorAPI {
 
     }
 
-    public IScanner getAndroidBLEScanner(Activity activity) throws BluetoothException {
+    public IScanner getAndroidBLEScanner(Activity activity) throws TransceiverException {
         return new AndroidBLEScanner(activity);
     }
 
-    public IScanner getAndroidBLEScannerWithPermCheck(Activity activity, BooleanSupplier checker) throws BluetoothException {
+    public IScanner getAndroidBLEScannerWithPermCheck(Activity activity, BooleanSupplier checker) throws TransceiverException {
         return new AndroidBLEScanner(activity, checker);
     }
 

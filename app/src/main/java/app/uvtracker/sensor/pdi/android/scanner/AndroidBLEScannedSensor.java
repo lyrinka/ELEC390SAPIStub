@@ -1,6 +1,7 @@
 package app.uvtracker.sensor.pdi.android.scanner;
 
 import android.bluetooth.le.ScanResult;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 
@@ -21,8 +22,8 @@ public class AndroidBLEScannedSensor implements IScannedSensor {
     @NonNull
     private Date timestamp;
 
-    public AndroidBLEScannedSensor(@NonNull ScanResult result) {
-        this(new AndroidBLESensor(result.getDevice()), result.getRssi());
+    public AndroidBLEScannedSensor(@NonNull ScanResult result, @NonNull Context context) {
+        this(new AndroidBLESensor(result.getDevice(), context), result.getRssi());
     }
 
     public AndroidBLEScannedSensor(@NonNull ISensor sensor, int rssi) {

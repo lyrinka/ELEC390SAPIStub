@@ -2,14 +2,13 @@ package app.uvtracker.sensor.api.scanner;
 
 import androidx.annotation.NonNull;
 
-import app.uvtracker.sensor.api.exception.BluetoothException;
-import app.uvtracker.sensor.api.scanner.IScannerCallback;
+import app.uvtracker.sensor.api.exception.transceiver.TransceiverException;
 
 public interface IScanner {
 
-    void startScanning(@NonNull IScannerCallback consumer) throws BluetoothException;
+    void startScanning(@NonNull IScannerCallback consumer) throws TransceiverException;
 
-    void stopScanning() throws BluetoothException;
+    void stopScanning() throws TransceiverException;
 
     boolean isScanning();
 

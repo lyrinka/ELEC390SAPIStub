@@ -6,5 +6,10 @@
     <string name="main_btn_scan">Scan</string>
     <string name="main_btn_stop">Stop</string>
 
+    <string name="sensor_btn_con">Connect</string>
+    <string name="sensor_btn_dis">Disconnect</string>
+    <string name="sensor_btn_rst">RESET</string>
+    <string name="sensor_btn_test">Test</string>
+
 
 </resources>

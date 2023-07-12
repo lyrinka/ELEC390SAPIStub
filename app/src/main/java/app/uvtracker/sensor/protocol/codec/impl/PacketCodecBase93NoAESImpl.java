@@ -23,7 +23,7 @@ public class PacketCodecBase93NoAESImpl implements IPacketCodec {
         return PacketCodecBase93NoAESImpl.instance;
     }
 
-    public static final int MTU = 125;
+    public static final int MTU = 122; // 128 - 3 (BLE) - 3 (FSM)
 
     @NonNull
     @Override

@@ -2,15 +2,29 @@ package app.uvtracker.sensor.pdi.android;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.function.Consumer;
 
-import app.uvtracker.sensor.api.ISensor;
+import app.uvtracker.sensor.api.IPacketDrivenSensor;
+import app.uvtracker.sensor.api.exception.comms.CommunicationException;
+import app.uvtracker.sensor.api.exception.comms.ConnectionInactiveException;
+import app.uvtracker.sensor.api.exception.comms.WriteFailedException;
+import app.uvtracker.sensor.pdi.android.util.EventRegistry;
+import app.uvtracker.sensor.protocol.codec.IPacketCodec;
+import app.uvtracker.sensor.protocol.codec.exception.CodecException;
+import app.uvtracker.sensor.protocol.packet.Packet;
 
-public class AndroidBLESensor implements ISensor {
+public class AndroidBLESensor implements IPacketDrivenSensor {
+
+    @NonNull
+    private static final String TAG = AndroidBLESensor.class.getSimpleName();
 
     @NonNull
     private final BluetoothDevice device;
@@ -18,10 +32,33 @@ public class AndroidBLESensor implements ISensor {
     @Nullable
     private final String name;
 
+    @NonNull
+    private final Context context;
+
+    @NonNull
+    private final EventRegistry<Consumer<ConnectionStatus>> connectionCallbackRegistry;
+
+    @NonNull
+    private final EventRegistry<Consumer<Packet>> packetCallbackRegistry;
+
+    @NonNull
+    private final AndroidBLESensorConnection connection;
+
     @SuppressLint("MissingPermission")
-    public AndroidBLESensor(@NonNull BluetoothDevice device) {
+    public AndroidBLESensor(@NonNull BluetoothDevice device, @NonNull Context context) {
         this.device = device;
         this.name = device.getName();
+        this.context = context;
+        this.connectionCallbackRegistry = new EventRegistry<>();
+        this.packetCallbackRegistry = new EventRegistry<>();
+        this.connection = new AndroidBLESensorConnection(
+                this,
+                (s) -> this.connectionCallbackRegistry.invoke((f) -> f.accept(s)),
+                (s) -> this.packetCallbackRegistry.invoke((f) -> {
+                    Packet packet = this.parsePacket(s);
+                    if(packet != null) f.accept(packet);
+                })
+        );
     }
 
     @NonNull
@@ -34,6 +71,16 @@ public class AndroidBLESensor implements ISensor {
     @Override
     public String getName() {
         return this.name;
+    }
+
+    @NonNull
+    public BluetoothDevice getPlatformDevice() {
+        return this.device;
+    }
+
+    @NonNull
+    public Context getPlatformContext() {
+        return this.context;
     }
 
     @Override
@@ -49,14 +96,76 @@ public class AndroidBLESensor implements ISensor {
         return Objects.hash(this.device.getAddress());
     }
 
+    // Connection flow:
     @Override
     public boolean isConnected() {
-        return false;
+        return this.connection.isConnected();
     }
 
     @Override
-    public void connect() {
-
+    public boolean connect() {
+        return this.connection.connect();
     }
 
+    @Override
+    public boolean disconnect() {
+        return this.connection.disconnect();
+    }
+
+    @Override
+    public void forceReset() {
+        this.connection.reset();
+    }
+
+    // Connection flow events:
+    @Override
+    public boolean registerConnectionStatusCallback(@NonNull Consumer<ConnectionStatus> callback) {
+        return this.connectionCallbackRegistry.register(callback);
+    }
+
+    @Override
+    public boolean unregisterConnectionStatusCallback(@NonNull Consumer<ConnectionStatus> callback) {
+        return this.connectionCallbackRegistry.unregister(callback);
+    }
+
+    // Packet infrastructure:
+    @Override
+    public boolean registerPacketReceptionCallback(@NonNull Consumer<Packet> callback) {
+        return this.packetCallbackRegistry.register(callback);
+    }
+
+    @Override
+    public boolean unregisterPacketReceptionCallback(@NonNull Consumer<Packet> callback) {
+        return this.packetCallbackRegistry.unregister(callback);
+    }
+
+    @Override
+    public void sendPacket(@NonNull Packet packet) throws CodecException, CommunicationException {
+        // TODO: packet fragmentation
+        // NOTE: if fragmentation is implemented, remove MTU specification in codec impl.
+        if(!this.connection.isConnected()) throw new ConnectionInactiveException();
+        String encoded = IPacketCodec.get().encode(packet);
+        if(!this.connection.write("#" + encoded + "\r\n")) throw new WriteFailedException();
+    }
+
+    private Packet parsePacket(byte[] input) {
+        String inputString = new String(input, StandardCharsets.US_ASCII).trim();
+        Log.d(TAG, "Packet parsing: processing \"" + inputString + "\"");
+        if(!inputString.startsWith("#")) {
+            Log.d(TAG, "Packet parsing: input does not start with a '#'.");
+            return null;
+        }
+        try {
+            return IPacketCodec.get().decode(inputString.substring(1));
+        } catch (CodecException e) {
+            Log.d(TAG, "Packet parsing: unable to parse packet. Caused by: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Features: WIP
+
+
 }
+
