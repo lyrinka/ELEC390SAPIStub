@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">ELEC390SAPIStub</string>
+    <string name="placeholder">Default</string>
+
+    <string name="main_rssi_format">RSSI: %1$d</string>
+    <string name="main_btn_scan">Scan</string>
+    <string name="main_btn_stop">Stop</string>
+
+
 </resources>

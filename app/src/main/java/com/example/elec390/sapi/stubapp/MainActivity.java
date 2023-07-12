@@ -1,38 +1,212 @@
 package com.example.elec390.sapi.stubapp;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.elec390.sapi.ISensorManager;
-import com.example.elec390.sapi.impl.android.AndroidBLESensorManager;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class MainActivity extends AppCompatActivity {
+import app.uvtracker.sensor.api.IScanner;
+import app.uvtracker.sensor.api.SensorAPI;
+import app.uvtracker.sensor.api.exception.BluetoothException;
+import app.uvtracker.sensor.api.type.IScannedSensor;
+import app.uvtracker.sensor.api.type.IScannerCallback;
 
-    private ISensorManager sensorManager;
+public class MainActivity extends AppCompatActivity implements IScannerCallback, Runnable {
 
-    private TextView textview;
+    private static final int REFRESH_PERIOD = 500;
+    private static final int SCAN_STOP_PERIODS = 60;
 
+    private IScanner scanner;
+
+    private RecyclerViewAdapter listAdapter;
+
+    private Collection<? extends IScannedSensor> datastore;
+
+    private final Handler refreshHandler = new Handler();
+    private int refreshCounter = 0;
+
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if(this.sensorManager == null)
-            this.sensorManager = new AndroidBLESensorManager(this);
+        if(this.scanner == null) {
+            try {
+                this.scanner = SensorAPI.getInstance().getAndroidBLEScanner(this);
+            } catch (BluetoothException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-        this.textview = this.findViewById(R.id.txt_display);
+        this.listAdapter = new RecyclerViewAdapter();
+        RecyclerView rView = this.findViewById(R.id.main_list_sensors);
+        rView.setAdapter(this.listAdapter);
+        rView.setLayoutManager(new LinearLayoutManager(this));
 
-        this.findViewById(R.id.btn_scan).setOnClickListener(v -> {
-            this.textview.setText("");
-            this.sensorManager.startScanning(sensor -> this.textview.setText(this.textview.getText() + "\n" + sensor.toString()));
+        Button btn = this.findViewById(R.id.main_btn_scan);
+        btn.setText(this.getString(R.string.main_btn_scan));
+        btn.setOnClickListener(v -> {
+            if(!this.scanner.isScanning()) this.startScanning();
+            else this.stopScanning();
         });
+    }
 
-        this.findViewById(R.id.btn_stop).setOnClickListener(v -> this.sensorManager.stopScanning());
+    private void startScanning() {
+        Button btn = this.findViewById(R.id.main_btn_scan);
+        btn.setText(this.getString(R.string.main_btn_stop));
+        this.datastore = null;
+        this.refreshCounter = 0;
+        try {
+            this.scanner.startScanning(this);
+        } catch (BluetoothException e) {
+            throw new RuntimeException(e);
+        }
+        this.run();
+    }
 
+    private void stopScanning() {
+        Button btn = this.findViewById(R.id.main_btn_scan);
+        btn.setText(this.getString(R.string.main_btn_scan));
+        try {
+            this.scanner.stopScanning();
+        } catch (BluetoothException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void onScanUpdate(@NonNull IScannedSensor sensor, boolean isFirstTime, @NonNull Collection<? extends IScannedSensor> sensors) {
+        this.datastore = sensors;
+    }
+
+    @Override
+    public void run() {
+        if(this.datastore != null) this.listAdapter.updateDatastore(this.datastore);
+        else this.listAdapter.clearDatastore();
+        if(this.scanner.isScanning()) {
+            this.refreshCounter++;
+            if(this.refreshCounter > SCAN_STOP_PERIODS) this.stopScanning();
+            else this.refreshHandler.postDelayed(this, REFRESH_PERIOD);
+        }
     }
 
 }
 
+class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private static final int INACTIVE_MS = 4000;
+    private static final int REMOVAL_MS = 10000;
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+
+        private final View itemView;
+        private int position;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            this.itemView = itemView;
+            this.position = 0;
+        }
+
+        public void updateContent(int position, ViewContent content) {
+            this.position = position;
+            content.applyTo(this.itemView);
+        }
+
+    }
+
+    private static class ViewContent {
+
+        @NonNull
+        private final String address;
+
+        @Nullable
+        private final String name;
+
+        private final int rssi;
+
+        private final boolean active;
+
+        public ViewContent(@NonNull String address, @Nullable String name, int rssi, boolean active) {
+            this.address = address;
+            this.name = name;
+            this.rssi = rssi;
+            this.active = active;
+        }
+
+        public void applyTo(View itemView) {
+            TextView nameText = itemView.findViewById(R.id.main_listitem_name);
+            TextView addrText = itemView.findViewById(R.id.main_listitem_mac);
+            TextView rssiText = itemView.findViewById(R.id.main_listitem_rssi);
+            nameText.setText(this.name == null ? "(hidden)" : this.name);
+            addrText.setText(this.address);
+            rssiText.setText(itemView.getContext().getString(R.string.main_rssi_format, this.rssi));
+            int color = itemView.getResources().getColor(this.active ? R.color.sensor_scan_active : R.color.sensor_scan_inactive);
+            nameText.setTextColor(color);
+            addrText.setTextColor(color);
+            rssiText.setTextColor(color);
+        }
+
+    }
+
+    @NonNull
+    private List<ViewContent> datastore;
+
+    public RecyclerViewAdapter() {
+        this.datastore = new ArrayList<>();
+    }
+
+    public void updateDatastore(Collection<? extends IScannedSensor> source) {
+        long currentTime = new Date().getTime();
+        this.datastore = source.stream()
+                .filter(sensor -> currentTime - sensor.lastSeenAt().getTime() < REMOVAL_MS)
+                .map(sensor -> new ViewContent(
+                        sensor.getSensor().getAddress(),
+                        sensor.getSensor().getName(), sensor.getRssi(),
+                        currentTime - sensor.lastSeenAt().getTime() < INACTIVE_MS))
+                .sorted(Comparator.comparingInt(o -> -o.rssi))
+                .collect(Collectors.toList());
+        this.notifyDataSetChanged();
+    }
+
+    public void clearDatastore() {
+        this.datastore.clear();
+        this.notifyDataSetChanged();
+    }
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_main_sensor_item, parent, false));
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if(holder instanceof ViewHolder)
+            ((ViewHolder)holder).updateContent(position, this.datastore.get(position));
+    }
+
+    @Override
+    public int getItemCount() {
+        return this.datastore.size();
+    }
+
+}

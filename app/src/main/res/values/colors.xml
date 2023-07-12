@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="sensor_scan_active">#FF332233</color>
+    <color name="sensor_scan_inactive">#FF99AA99</color>
 </resources>
