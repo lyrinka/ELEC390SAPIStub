@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pdi.android;
+package app.uvtracker.sensor.pdi.android.scanner;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -19,13 +19,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
-import app.uvtracker.sensor.api.IScanner;
+import app.uvtracker.sensor.api.scanner.IScanner;
 import app.uvtracker.sensor.api.exception.BluetoothException;
 import app.uvtracker.sensor.api.exception.BluetoothNoPermException;
 import app.uvtracker.sensor.api.exception.BluetoothOffException;
 import app.uvtracker.sensor.api.exception.BluetoothUnsupportedException;
-import app.uvtracker.sensor.api.type.IScannerCallback;
-import app.uvtracker.sensor.pdi.android.type.AndroidBLEScannedSensor;
+import app.uvtracker.sensor.api.scanner.IScannerCallback;
+import app.uvtracker.sensor.pdi.BLEDeviceDesc;
 
 public class AndroidBLEScanner implements IScanner {
 
@@ -61,8 +61,8 @@ public class AndroidBLEScanner implements IScanner {
 
         List<ScanFilter> filters = new ArrayList<>();
         ScanFilter.Builder filterBuilder = new ScanFilter.Builder();
-        if(AndroidBLEModuleDesc.RESTRICTED)
-            filterBuilder.setServiceUuid(ParcelUuid.fromString(AndroidBLEModuleDesc.SERVICE_UUID));
+        if(BLEDeviceDesc.RESTRICTED)
+            filterBuilder.setServiceUuid(ParcelUuid.fromString(BLEDeviceDesc.SERVICE_UUID));
         filters.add(filterBuilder.build());
         ScanSettings settings = new ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)

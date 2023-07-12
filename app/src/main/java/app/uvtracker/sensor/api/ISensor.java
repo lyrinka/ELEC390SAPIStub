@@ -1,9 +1,9 @@
-package app.uvtracker.sensor.api.type;
+package app.uvtracker.sensor.api;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public interface AndroidBLESensor {
+public interface ISensor {
 
     @NonNull
     String getAddress();

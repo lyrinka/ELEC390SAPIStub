@@ -1,9 +1,9 @@
-package app.uvtracker.sensor.api;
+package app.uvtracker.sensor.api.scanner;
 
 import androidx.annotation.NonNull;
 
 import app.uvtracker.sensor.api.exception.BluetoothException;
-import app.uvtracker.sensor.api.type.IScannerCallback;
+import app.uvtracker.sensor.api.scanner.IScannerCallback;
 
 public interface IScanner {
 

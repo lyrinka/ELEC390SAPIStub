@@ -1,6 +1,6 @@
-package app.uvtracker.sensor.pdi.android;
+package app.uvtracker.sensor.pdi;
 
-public class AndroidBLEModuleDesc {
+public class BLEDeviceDesc {
 
     public static boolean RESTRICTED = true;
 

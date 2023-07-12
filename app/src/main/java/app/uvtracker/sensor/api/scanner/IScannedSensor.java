@@ -1,13 +1,15 @@
-package app.uvtracker.sensor.api.type;
+package app.uvtracker.sensor.api.scanner;
 
 import androidx.annotation.NonNull;
 
 import java.util.Date;
 
+import app.uvtracker.sensor.api.ISensor;
+
 public interface IScannedSensor {
 
     @NonNull
-    AndroidBLESensor getSensor();
+    ISensor getSensor();
 
     int getRssi();
 

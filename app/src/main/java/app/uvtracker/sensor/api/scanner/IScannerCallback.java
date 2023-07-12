@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.api.type;
+package app.uvtracker.sensor.api.scanner;
 
 import androidx.annotation.NonNull;
 

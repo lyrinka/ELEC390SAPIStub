@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pdi.android.type;
+package app.uvtracker.sensor.pdi.android;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
@@ -8,7 +8,9 @@ import androidx.annotation.Nullable;
 
 import java.util.Objects;
 
-public class AndroidBLESensor implements app.uvtracker.sensor.api.type.AndroidBLESensor {
+import app.uvtracker.sensor.api.ISensor;
+
+public class AndroidBLESensor implements ISensor {
 
     @NonNull
     private final BluetoothDevice device;

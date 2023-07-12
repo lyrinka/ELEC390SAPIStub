@@ -22,11 +22,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import app.uvtracker.sensor.api.IScanner;
+import app.uvtracker.sensor.api.scanner.IScanner;
 import app.uvtracker.sensor.api.SensorAPI;
 import app.uvtracker.sensor.api.exception.BluetoothException;
-import app.uvtracker.sensor.api.type.IScannedSensor;
-import app.uvtracker.sensor.api.type.IScannerCallback;
+import app.uvtracker.sensor.api.scanner.IScannedSensor;
+import app.uvtracker.sensor.api.scanner.IScannerCallback;
 
 public class MainActivity extends AppCompatActivity implements IScannerCallback, Runnable {
 

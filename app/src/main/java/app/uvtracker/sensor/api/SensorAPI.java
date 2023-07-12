@@ -5,7 +5,8 @@ import android.app.Activity;
 import java.util.function.BooleanSupplier;
 
 import app.uvtracker.sensor.api.exception.BluetoothException;
-import app.uvtracker.sensor.pdi.android.AndroidBLEScanner;
+import app.uvtracker.sensor.api.scanner.IScanner;
+import app.uvtracker.sensor.pdi.android.scanner.AndroidBLEScanner;
 
 public final class SensorAPI {
 

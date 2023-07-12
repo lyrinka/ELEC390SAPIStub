@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pdi.android.type;
+package app.uvtracker.sensor.pdi.android.scanner;
 
 import android.bluetooth.le.ScanResult;
 
@@ -7,13 +7,14 @@ import androidx.annotation.NonNull;
 import java.util.Date;
 import java.util.Objects;
 
-import app.uvtracker.sensor.api.type.IScannedSensor;
-import app.uvtracker.sensor.api.type.AndroidBLESensor;
+import app.uvtracker.sensor.api.scanner.IScannedSensor;
+import app.uvtracker.sensor.api.ISensor;
+import app.uvtracker.sensor.pdi.android.AndroidBLESensor;
 
 public class AndroidBLEScannedSensor implements IScannedSensor {
 
     @NonNull
-    private final AndroidBLESensor sensor;
+    private final ISensor sensor;
 
     private int rssi;
 
@@ -21,10 +22,10 @@ public class AndroidBLEScannedSensor implements IScannedSensor {
     private Date timestamp;
 
     public AndroidBLEScannedSensor(@NonNull ScanResult result) {
-        this(new app.uvtracker.sensor.pdi.android.type.AndroidBLESensor(result.getDevice()), result.getRssi());
+        this(new AndroidBLESensor(result.getDevice()), result.getRssi());
     }
 
-    public AndroidBLEScannedSensor(@NonNull AndroidBLESensor sensor, int rssi) {
+    public AndroidBLEScannedSensor(@NonNull ISensor sensor, int rssi) {
         this.sensor = sensor;
         this.rssi = rssi;
         this.timestamp = new Date();
@@ -32,7 +33,7 @@ public class AndroidBLEScannedSensor implements IScannedSensor {
 
     @NonNull
     @Override
-    public AndroidBLESensor getSensor() {
+    public ISensor getSensor() {
         return this.sensor;
     }
 
