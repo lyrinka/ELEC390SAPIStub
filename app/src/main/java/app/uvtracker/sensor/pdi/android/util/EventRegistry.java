@@ -26,7 +26,7 @@ public class EventRegistry<T> {
     }
 
     public void invoke(Consumer<T> functor) {
-        this.storage.forEach((obj) -> functor.accept(obj));
+        this.storage.forEach(functor);
     }
 
 }

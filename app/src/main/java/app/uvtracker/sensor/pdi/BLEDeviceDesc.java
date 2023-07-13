@@ -3,6 +3,7 @@ package app.uvtracker.sensor.pdi;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 
+@SuppressWarnings("CanBeFinal")
 public class BLEDeviceDesc {
 
     public static final String CCCD_UUID = "00002902-0000-1000-8000-00805f9b34fb";

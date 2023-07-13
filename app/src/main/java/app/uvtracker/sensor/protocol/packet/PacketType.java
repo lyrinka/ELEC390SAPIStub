@@ -1,23 +1,42 @@
-package app.uvtracker.sensor.protocol.type;
+package app.uvtracker.sensor.protocol.packet;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
+/*
+    Packet ID range conventions:
+        0x00 to 0x1F: System packets
+        0x20 to 0x3F: Data transfer & request packets
+        0x40 to 0x5F: HMI packets
+        0x60 to 0x6F: Reserved
+        0x70 to 0x7F: Debug & tracing
+ */
 public interface PacketType {
 
     enum IN implements PacketType {
 
-        KEEP_ALIVE(0),
-        DATA_SINGLE(1);
+        // Debug
+        DEBUG           (0x7F, PacketInDebug.class),
+        // System
+        KEEP_ALIVE      (0x00, PacketInKeepAlive.class),
+        // HMI
+        BUTTON_INTERACT (0x40, PacketInButtonInteract.class),
 
-        final int packetID;
+        ;
 
-        IN(int packetID) {
+        private final int packetID;
+
+        @NonNull
+        private final Class<? extends Packet> clazz;
+
+        IN(int packetID, @NonNull Class<? extends Packet> clazz) {
             this.packetID = packetID;
+            this.clazz = clazz;
         }
 
         @Override
@@ -29,6 +48,12 @@ public interface PacketType {
         @NonNull
         public PacketDirection getDirection() {
             return PacketDirection.IN;
+        }
+
+        @Override
+        @NonNull
+        public Class<? extends Packet> getPacketClass() {
+            return this.clazz;
         }
 
         @Override
@@ -52,13 +77,22 @@ public interface PacketType {
 
     enum OUT implements PacketType {
 
-        KEEP_ALIVE(0),
-        BUZZ(1);
+        // System
+        KEEP_ALIVE      (0x00, PacketOutKeepAlive.class),
+        // HMI
+        BUZZ            (0x41, PacketOutBuzz.class),
+        FLASH_LED       (0x42, PacketOutFlashLED.class),
 
-        final int packetID;
+        ;
 
-        OUT(int packetID) {
+        private final int packetID;
+
+        @NonNull
+        private final Class<? extends Packet> clazz;
+
+        OUT(int packetID, @NonNull Class<? extends Packet> clazz) {
             this.packetID = packetID;
+            this.clazz = clazz;
         }
 
         @Override
@@ -70,6 +104,12 @@ public interface PacketType {
         @NonNull
         public PacketDirection getDirection() {
             return PacketDirection.OUT;
+        }
+
+        @Override
+        @NonNull
+        public Class<? extends Packet> getPacketClass() {
+            return this.clazz;
         }
 
         @Override
@@ -91,11 +131,26 @@ public interface PacketType {
 
     }
 
+
     int getID();
 
-    @NonNull PacketDirection getDirection();
+    @NonNull
+    PacketDirection getDirection();
+
+    @NonNull
+    Class<? extends Packet> getPacketClass();
+
+    @Nullable
+    default Constructor<? extends Packet> getPacketConstructor() {
+        try {
+            return this.getPacketClass().getConstructor(Packet.class);
+        } catch (NoSuchMethodException | SecurityException e) {
+            return null;
+        }
+    }
 
     @Override
-    @NonNull String toString();
+    @NonNull
+    String toString();
 
 }

@@ -4,7 +4,7 @@ import android.app.Activity;
 
 import java.util.function.BooleanSupplier;
 
-import app.uvtracker.sensor.api.exception.transceiver.TransceiverException;
+import app.uvtracker.sensor.api.exception.TransceiverException;
 import app.uvtracker.sensor.api.scanner.IScanner;
 import app.uvtracker.sensor.pdi.android.scanner.AndroidBLEScanner;
 

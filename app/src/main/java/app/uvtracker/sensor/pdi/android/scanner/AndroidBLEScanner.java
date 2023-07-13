@@ -20,10 +20,10 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 import app.uvtracker.sensor.api.scanner.IScanner;
-import app.uvtracker.sensor.api.exception.transceiver.TransceiverException;
-import app.uvtracker.sensor.api.exception.transceiver.TransceiverNoPermException;
-import app.uvtracker.sensor.api.exception.transceiver.TransceiverOffException;
-import app.uvtracker.sensor.api.exception.transceiver.TransceiverUnsupportedException;
+import app.uvtracker.sensor.api.exception.TransceiverException;
+import app.uvtracker.sensor.api.exception.TransceiverNoPermException;
+import app.uvtracker.sensor.api.exception.TransceiverOffException;
+import app.uvtracker.sensor.api.exception.TransceiverUnsupportedException;
 import app.uvtracker.sensor.api.scanner.IScannerCallback;
 import app.uvtracker.sensor.pdi.BLEDeviceDesc;
 
@@ -104,7 +104,7 @@ class InternalScanCallback extends ScanCallback {
     @NonNull
     private final Context context;
 
-    public InternalScanCallback(@NonNull IScannerCallback callback, Context context) {
+    public InternalScanCallback(@NonNull IScannerCallback callback, @NonNull Context context) {
         this.map = new HashMap<>();
         this.callback = callback;
         this.context = context;

@@ -13,9 +13,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import app.uvtracker.sensor.api.IPacketDrivenSensor;
-import app.uvtracker.sensor.api.exception.comms.CommunicationException;
-import app.uvtracker.sensor.api.exception.comms.ConnectionInactiveException;
-import app.uvtracker.sensor.api.exception.comms.WriteFailedException;
 import app.uvtracker.sensor.pdi.android.util.EventRegistry;
 import app.uvtracker.sensor.protocol.codec.IPacketCodec;
 import app.uvtracker.sensor.protocol.codec.exception.CodecException;
@@ -54,10 +51,11 @@ public class AndroidBLESensor implements IPacketDrivenSensor {
         this.connection = new AndroidBLESensorConnection(
                 this,
                 (s) -> this.connectionCallbackRegistry.invoke((f) -> f.accept(s)),
-                (s) -> this.packetCallbackRegistry.invoke((f) -> {
+                (s) -> {
                     Packet packet = this.parsePacket(s);
-                    if(packet != null) f.accept(packet);
-                })
+                    if(packet == null) return;
+                    this.packetCallbackRegistry.invoke((f) -> f.accept(packet));
+                }
         );
     }
 
@@ -140,12 +138,19 @@ public class AndroidBLESensor implements IPacketDrivenSensor {
     }
 
     @Override
-    public void sendPacket(@NonNull Packet packet) throws CodecException, CommunicationException {
+    public boolean sendPacket(@NonNull Packet packet) {
         // TODO: packet fragmentation
         // NOTE: if fragmentation is implemented, remove MTU specification in codec impl.
-        if(!this.connection.isConnected()) throw new ConnectionInactiveException();
-        String encoded = IPacketCodec.get().encode(packet);
-        if(!this.connection.write("#" + encoded + "\r\n")) throw new WriteFailedException();
+        if(!this.connection.isConnected()) return false;
+        try {
+            String encoded = IPacketCodec.get().encode(packet);
+            return this.connection.write("#" + encoded + "\r\n");
+        }
+        catch(CodecException e) {
+            Log.d(TAG, "Packet sending: unable to send packet. Caused by: " + e.getClass().getSimpleName());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private Packet parsePacket(byte[] input) {
@@ -156,7 +161,10 @@ public class AndroidBLESensor implements IPacketDrivenSensor {
             return null;
         }
         try {
-            return IPacketCodec.get().decode(inputString.substring(1));
+            Packet packet = IPacketCodec.get().decode(inputString.substring(1));
+            if(packet.isBaseType()) Log.d(TAG, "Obtained base type. " + packet);
+            else Log.d(TAG, "Obtained specific type! " + packet);
+            return packet;
         } catch (CodecException e) {
             Log.d(TAG, "Packet parsing: unable to parse packet. Caused by: " + e.getClass().getSimpleName());
             e.printStackTrace();

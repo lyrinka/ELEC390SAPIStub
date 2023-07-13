@@ -2,25 +2,25 @@ package app.uvtracker.sensor.protocol.packet;
 
 import androidx.annotation.NonNull;
 
-import java.util.Arrays;
-
-import app.uvtracker.sensor.protocol.type.PacketType;
-
 public class Packet {
 
     @NonNull
-    private final PacketType type;
+    protected final PacketType type;
 
     @NonNull
-    private byte[] payload;
+    protected byte[] payload;
 
     public Packet(@NonNull PacketType type, @NonNull byte[] payload) {
         this.type = type;
         this.payload = payload;
     }
 
+    public Packet(@NonNull PacketType type, int payloadSize) {
+        this(type, new byte[payloadSize]);
+    }
+
     public Packet(@NonNull PacketType type) {
-        this(type, new byte[0]);
+        this(type, 0);
     }
 
     public Packet(@NonNull Packet obj) {
@@ -31,6 +31,10 @@ public class Packet {
     @NonNull
     public PacketType getType() {
         return type;
+    }
+
+    public boolean isBaseType() {
+        return true;
     }
 
     @NonNull
@@ -48,10 +52,12 @@ public class Packet {
     public String toString() {
         StringBuilder sb = new StringBuilder(this.payload.length * 3 + 1);
         sb.append("[");
-        for(byte data : this.payload) sb.append(String.format("%02x ", data));
-        if(sb.length() > 1) sb.deleteCharAt(sb.length() - 1);
+        for(byte data : this.payload) sb.append(String.format("%02x, ", data));
         sb.append("]");
-        return this.type + sb.toString();
+        if(this.isBaseType())
+            return this.type + "(BASE)" + sb;
+        else
+            return this.type + sb.toString();
     }
 
 }

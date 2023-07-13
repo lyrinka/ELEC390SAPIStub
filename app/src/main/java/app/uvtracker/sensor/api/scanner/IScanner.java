@@ -2,7 +2,7 @@ package app.uvtracker.sensor.api.scanner;
 
 import androidx.annotation.NonNull;
 
-import app.uvtracker.sensor.api.exception.transceiver.TransceiverException;
+import app.uvtracker.sensor.api.exception.TransceiverException;
 
 public interface IScanner {
 

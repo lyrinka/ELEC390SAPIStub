@@ -30,8 +30,10 @@ public class AndroidBLESensorConnection extends BluetoothGattCallback {
     @NonNull
     private static final String TAG = AndroidBLESensorConnection.class.getSimpleName();
 
+    @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "CanBeFinal"})
     private static int CONNECTION_TIMEOUT = 8000;
 
+    @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "CanBeFinal"})
     private static int CONNECTION_GRACE_PERIOD = 500;
 
     public enum Stage {

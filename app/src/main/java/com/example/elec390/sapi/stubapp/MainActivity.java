@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import app.uvtracker.sensor.api.ISensor;
 import app.uvtracker.sensor.api.scanner.IScanner;
 import app.uvtracker.sensor.api.SensorAPI;
-import app.uvtracker.sensor.api.exception.transceiver.TransceiverException;
+import app.uvtracker.sensor.api.exception.TransceiverException;
 import app.uvtracker.sensor.api.scanner.IScannedSensor;
 import app.uvtracker.sensor.api.scanner.IScannerCallback;
 
@@ -208,6 +208,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         this.callback = clickCallback;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void updateDatastore(Collection<? extends IScannedSensor> source) {
         long currentTime = new Date().getTime();
         this.datastore = source.stream()
@@ -222,6 +223,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         this.notifyDataSetChanged();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void clearDatastore() {
         this.datastore.clear();
         this.notifyDataSetChanged();

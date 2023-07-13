@@ -1,7 +1,12 @@
 package app.uvtracker.sensor.protocol.codec.impl;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import app.uvtracker.sensor.protocol.codec.IPacketCodec;
 import app.uvtracker.sensor.protocol.codec.exception.CodecException;
@@ -10,10 +15,12 @@ import app.uvtracker.sensor.protocol.codec.exception.PacketFormatException;
 import app.uvtracker.sensor.protocol.codec.helper.Base93Helper;
 import app.uvtracker.sensor.protocol.codec.helper.CRC8Helper;
 import app.uvtracker.sensor.protocol.packet.Packet;
-import app.uvtracker.sensor.protocol.type.PacketDirection;
-import app.uvtracker.sensor.protocol.type.PacketType;
+import app.uvtracker.sensor.protocol.packet.PacketDirection;
+import app.uvtracker.sensor.protocol.packet.PacketType;
 
 public class PacketCodecBase93NoAESImpl implements IPacketCodec {
+
+    private static final String TAG = PacketCodecBase93NoAESImpl.class.getSimpleName();
 
     private static PacketCodecBase93NoAESImpl instance;
 
@@ -57,18 +64,35 @@ public class PacketCodecBase93NoAESImpl implements IPacketCodec {
     @NonNull
     @Override
     public Packet decode(@NonNull String packet) throws CodecException {
-        return this.deserialize(Base93Helper.decode(packet));
+        Packet packetBase = this.deserialize(Base93Helper.decode(packet));
+        Constructor<? extends Packet> constructor = packetBase.getType().getPacketConstructor();
+        if(constructor == null) {
+            Log.d(TAG, new PacketFormatException("Packed is not down-constructable (maybe it's an OUT packet?)", packetBase).getMessage());
+            return packetBase;
+        }
+        try {
+            return constructor.newInstance(packetBase);
+        }
+        catch(IllegalAccessException | InstantiationException e) {
+            Log.d(TAG, new PacketFormatException("Exception in reflective instantiation process (maybe it's an OUT packet?)", packetBase).getMessage());
+            return packetBase;
+        }
+        catch (InvocationTargetException e) {
+            Log.d(TAG, "Exception in down-construction process. Is the packet corrupted?");
+            Log.d(TAG, e.getCause().getMessage());
+            return packetBase;
+        }
     }
 
     @NonNull
     private Packet deserialize(@NonNull byte[] data) throws CodecException {
-        if(data.length < 3) throw new PacketFormatException("Packet is too small.");
+        if(data.length < 3) throw new PacketFormatException("Packet is too small.", data);
         PacketType type = this.deserializeHeader(data[0]);
-        if(type == null) throw new PacketFormatException("Packet ID " + (data[0] & 0x7F) + " does not exist.");
+        if(type == null) throw new PacketFormatException("Packet ID " + (data[0] & 0x7F) + " does not exist.", data);
         int length = data[1];
-        if(data.length < length + 3) throw new PacketFormatException("Packet is too small and does not contain necessary fields.");
+        if(data.length < length + 3) throw new PacketFormatException("Packet is too small and does not contain necessary fields.", data);
         byte crc = CRC8Helper.compute(data, length + 2);
-        if(crc != data[length + 2]) throw new PacketFormatException("Packet is corrupted.");
+        if(crc != data[length + 2]) throw new PacketFormatException("Packet is corrupted.", data);
         byte[] payload = new byte[length];
         System.arraycopy(data, 2, payload, 0, length);
         return new Packet(type, payload);

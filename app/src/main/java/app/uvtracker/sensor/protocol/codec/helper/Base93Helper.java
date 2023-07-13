@@ -72,6 +72,7 @@ public class Base93Helper {
     public static String encode(@NonNull byte[] input) {
         ByteArrayInputStream istream = new ByteArrayInputStream(input);
         ByteArrayOutputStream ostream = new ByteArrayOutputStream(Base93Helper.estimateEncodedSize(input.length));
+        //noinspection StatementWithEmptyBody
         while(!Base93Helper.blockEncode(istream, ostream));
         try {
             return ostream.toString(StandardCharsets.US_ASCII.toString());
@@ -85,13 +86,9 @@ public class Base93Helper {
     @NonNull
     public static byte[] decode(@NonNull String input) {
         ByteArrayInputStream istream;
-        try {
-            istream = new ByteArrayInputStream(input.getBytes(StandardCharsets.US_ASCII.toString()));
-        } catch (UnsupportedEncodingException e) {
-            // This should never happen
-            throw new RuntimeException(e);
-        }
+        istream = new ByteArrayInputStream(input.getBytes(StandardCharsets.US_ASCII));
         ByteArrayOutputStream ostream = new ByteArrayOutputStream(Base93Helper.estimateDecodedSize(istream.available()));
+        //noinspection StatementWithEmptyBody
         while(!Base93Helper.blockDecode(istream, ostream));
         return ostream.toByteArray();
     }
