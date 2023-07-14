@@ -3,6 +3,7 @@ package app.uvtracker.sensor.protocol.packet;
 import androidx.annotation.NonNull;
 
 import app.uvtracker.sensor.protocol.codec.exception.PacketFormatException;
+import app.uvtracker.sensor.protocol.util.Packing;
 
 public class PacketInButtonInteract extends PacketIn {
 
@@ -24,20 +25,19 @@ public class PacketInButtonInteract extends PacketIn {
 
     public PacketInButtonInteract(Packet packetBase) throws PacketFormatException {
         super(packetBase);
-        if(this.payload.length != 1)
-            throw new PacketFormatException("Expected 1 byte.", packetBase);
-        byte data = this.payload[0];
+        PacketFormatException.requireLength(packetBase, 1);
+        int data = Packing.unpack1(this.payload, 0);
         int buttonCode = data & 0x0F;
         int actionCode = (data & 0xF0) >> 4;
         switch(buttonCode) {
             case 0: this.button = Button.FIRST; break;
             case 1: this.button = Button.SECOND; break;
-            default: throw new PacketFormatException("Undefined button number.", packetBase);
+            default: throw new PacketFormatException("Undefined button number " + buttonCode, packetBase);
         }
         switch(actionCode) {
             case 0: this.action = Action.RELEASED; break;
             case 1: this.action = Action.PRESSED; break;
-            default: throw new PacketFormatException("Undefined action code.", packetBase);
+            default: throw new PacketFormatException("Undefined action code " + actionCode, packetBase);
         }
     }
 
