@@ -17,6 +17,7 @@ import java.util.Objects;
 import app.uvtracker.sensor.api.IPacketDrivenSensor;
 import app.uvtracker.sensor.api.ISensor;
 import app.uvtracker.sensor.protocol.packet.Packet;
+import app.uvtracker.sensor.protocol.packet.PacketInNewSample;
 import app.uvtracker.sensor.protocol.packet.PacketType;
 
 public class SensorActivity extends AppCompatActivity {
@@ -46,7 +47,20 @@ public class SensorActivity extends AppCompatActivity {
         IPacketDrivenSensor packetDrivenSensor = (IPacketDrivenSensor)sensor;
         packetDrivenSensor.registerPacketReceptionCallback((packet) ->
                 (new Handler(Looper.getMainLooper()))
-                .post(() -> this.updateStatus("Received: \n" + packet.toString()))
+                .post(() -> {
+                    if(packet instanceof PacketInNewSample) {
+                        float lux = 0.2f * ((PacketInNewSample)packet).getIntensityVIS();
+                        float uvi = 0.017142857f * ((PacketInNewSample)packet).getIntensityUV();
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(packet).append("\n");
+                        sb.append("lux: ").append(lux);
+                        sb.append(", uv: ").append(uvi);
+                        this.updateStatus(sb.toString());
+                    }
+                    else {
+                        this.updateStatus("Received: \n" + packet.toString());
+                    }
+                })
         );
 
         Button btnConnect = this.findViewById(R.id.sensor_btn_con);

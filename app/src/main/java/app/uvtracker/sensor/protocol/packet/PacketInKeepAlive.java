@@ -2,6 +2,8 @@ package app.uvtracker.sensor.protocol.packet;
 
 import androidx.annotation.NonNull;
 
+import app.uvtracker.sensor.protocol.util.Packing;
+
 public class PacketInKeepAlive extends PacketIn {
 
     private final int keepAliveID;
@@ -9,11 +11,7 @@ public class PacketInKeepAlive extends PacketIn {
     public PacketInKeepAlive(Packet basePacket) {
         super(basePacket);
         if(this.payload.length == 4) {
-            this.keepAliveID =
-                       this.payload[0]
-                    | (this.payload[1] << 8)
-                    | (this.payload[2] << 16)
-                    | (this.payload[3] << 24);
+            this.keepAliveID = Packing.unpack4(this.payload, 4);
         }
         else {
             this.keepAliveID = -1;

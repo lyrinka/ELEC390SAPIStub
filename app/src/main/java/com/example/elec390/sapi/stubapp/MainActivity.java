@@ -16,6 +16,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.elec390.sapi.stubapp.util.BLEPermissions;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements IScannerCallback,
         Button btn = this.findViewById(R.id.main_btn_scan);
         btn.setText(this.getString(R.string.main_btn_scan));
         btn.setOnClickListener(v -> {
+            BLEPermissions.ensure(this);
             if(!this.scanner.isScanning()) this.startScanning();
             else this.stopScanning();
         });
