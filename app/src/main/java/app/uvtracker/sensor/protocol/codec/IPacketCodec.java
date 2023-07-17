@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 import app.uvtracker.sensor.protocol.codec.exception.CodecException;
 import app.uvtracker.sensor.protocol.codec.impl.PacketCodecBase93NoAESImpl;
-import app.uvtracker.sensor.protocol.packet.Packet;
+import app.uvtracker.sensor.protocol.packet.base.Packet;
 
 public interface IPacketCodec {
 

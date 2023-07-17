@@ -5,8 +5,8 @@ import org.junit.Test;
 
 import app.uvtracker.sensor.protocol.codec.IPacketCodec;
 import app.uvtracker.sensor.protocol.codec.exception.CodecException;
-import app.uvtracker.sensor.protocol.packet.Packet;
-import app.uvtracker.sensor.protocol.packet.PacketType;
+import app.uvtracker.sensor.protocol.packet.base.Packet;
+import app.uvtracker.sensor.protocol.packet.type.PacketType;
 
 public class CodecTest {
     @Test

@@ -1,6 +1,8 @@
-package app.uvtracker.sensor.protocol.packet;
+package app.uvtracker.sensor.protocol.packet.base;
 
 import androidx.annotation.NonNull;
+
+import app.uvtracker.sensor.protocol.packet.type.PacketType;
 
 public class Packet {
 

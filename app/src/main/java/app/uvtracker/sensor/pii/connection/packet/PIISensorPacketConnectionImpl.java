@@ -17,7 +17,7 @@ import app.uvtracker.sensor.pii.event.EventRegistry;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.protocol.codec.IPacketCodec;
 import app.uvtracker.sensor.protocol.codec.exception.CodecException;
-import app.uvtracker.sensor.protocol.packet.Packet;
+import app.uvtracker.sensor.protocol.packet.base.Packet;
 
 public class PIISensorPacketConnectionImpl extends EventRegistry implements ISensorPacketConnection, IEventListener {
 

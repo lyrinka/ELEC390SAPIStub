@@ -1,5 +1,7 @@
-package app.uvtracker.sensor.protocol.packet;
+package app.uvtracker.sensor.protocol.packet.out;
 
+import app.uvtracker.sensor.protocol.packet.base.PacketOut;
+import app.uvtracker.sensor.protocol.packet.type.PacketType;
 import app.uvtracker.sensor.protocol.util.Packing;
 
 public class PacketOutKeepAlive extends PacketOut {

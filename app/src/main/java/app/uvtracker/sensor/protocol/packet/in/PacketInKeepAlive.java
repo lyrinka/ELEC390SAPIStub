@@ -1,7 +1,9 @@
-package app.uvtracker.sensor.protocol.packet;
+package app.uvtracker.sensor.protocol.packet.in;
 
 import androidx.annotation.NonNull;
 
+import app.uvtracker.sensor.protocol.packet.base.Packet;
+import app.uvtracker.sensor.protocol.packet.base.PacketIn;
 import app.uvtracker.sensor.protocol.util.Packing;
 
 public class PacketInKeepAlive extends PacketIn {

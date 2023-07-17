@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.protocol.packet;
+package app.uvtracker.sensor.protocol.packet.type;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -7,6 +7,15 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Collectors;
+
+import app.uvtracker.sensor.protocol.packet.base.Packet;
+import app.uvtracker.sensor.protocol.packet.in.PacketInButtonInteract;
+import app.uvtracker.sensor.protocol.packet.in.PacketInDebug;
+import app.uvtracker.sensor.protocol.packet.in.PacketInKeepAlive;
+import app.uvtracker.sensor.protocol.packet.in.PacketInNewSample;
+import app.uvtracker.sensor.protocol.packet.out.PacketOutBuzz;
+import app.uvtracker.sensor.protocol.packet.out.PacketOutFlashLED;
+import app.uvtracker.sensor.protocol.packet.out.PacketOutKeepAlive;
 
 /*
     Packet ID range conventions:

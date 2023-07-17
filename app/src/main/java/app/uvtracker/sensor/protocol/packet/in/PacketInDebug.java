@@ -1,8 +1,11 @@
-package app.uvtracker.sensor.protocol.packet;
+package app.uvtracker.sensor.protocol.packet.in;
 
 import androidx.annotation.NonNull;
 
 import java.nio.charset.Charset;
+
+import app.uvtracker.sensor.protocol.packet.base.Packet;
+import app.uvtracker.sensor.protocol.packet.base.PacketIn;
 
 public class PacketInDebug extends PacketIn {
 

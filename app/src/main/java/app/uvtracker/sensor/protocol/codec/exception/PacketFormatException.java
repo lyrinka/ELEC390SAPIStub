@@ -3,7 +3,7 @@ package app.uvtracker.sensor.protocol.codec.exception;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import app.uvtracker.sensor.protocol.packet.Packet;
+import app.uvtracker.sensor.protocol.packet.base.Packet;
 
 public class PacketFormatException extends CodecException {
 

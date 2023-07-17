@@ -21,8 +21,8 @@ import app.uvtracker.sensor.pii.connection.packet.event.UnrecognizableMessageRec
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
-import app.uvtracker.sensor.protocol.packet.Packet;
-import app.uvtracker.sensor.protocol.packet.PacketOutBuzz;
+import app.uvtracker.sensor.protocol.packet.base.Packet;
+import app.uvtracker.sensor.protocol.packet.out.PacketOutBuzz;
 
 public class SensorActivity extends AppCompatActivity implements IEventListener {
 
