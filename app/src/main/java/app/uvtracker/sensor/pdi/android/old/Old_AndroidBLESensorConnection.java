@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pdi.android;
+package app.uvtracker.sensor.pdi.android.old;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
@@ -25,10 +25,10 @@ import app.uvtracker.sensor.pdi.BLEDeviceDesc;
 import app.uvtracker.sensor.pdi.android.util.CancellableDelayedOneTimeTask;
 
 @SuppressLint("MissingPermission")
-public class AndroidBLESensorConnection extends BluetoothGattCallback {
+public class Old_AndroidBLESensorConnection extends BluetoothGattCallback {
 
     @NonNull
-    private static final String TAG = AndroidBLESensorConnection.class.getSimpleName();
+    private static final String TAG = Old_AndroidBLESensorConnection.class.getSimpleName();
 
     @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "CanBeFinal"})
     private static int CONNECTION_TIMEOUT = 8000;
@@ -57,7 +57,7 @@ public class AndroidBLESensorConnection extends BluetoothGattCallback {
     private final Consumer<byte[]> dataCallback;
 
     @NonNull
-    private final AndroidBLESensor sensor;
+    private final Old_AndroidBLESensor sensor;
 
     @Nullable
     private BluetoothGatt gatt;
@@ -75,9 +75,9 @@ public class AndroidBLESensorConnection extends BluetoothGattCallback {
 
     private int sessionWriteType;
 
-    public AndroidBLESensorConnection(@NonNull AndroidBLESensor sensor,
-                                      @NonNull Consumer<ISensor.ConnectionStatus> statusCallback,
-                                      @NonNull Consumer<byte[]> dataCallback) {
+    public Old_AndroidBLESensorConnection(@NonNull Old_AndroidBLESensor sensor,
+                                          @NonNull Consumer<ISensor.ConnectionStatus> statusCallback,
+                                          @NonNull Consumer<byte[]> dataCallback) {
         this.stage = Stage.IDLE;
         this.sensor = sensor;
         this.statusCallback = statusCallback;

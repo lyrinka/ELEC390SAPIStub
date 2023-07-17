@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pdi.android.util;
+package app.uvtracker.sensor.pdi.android.old;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -7,11 +7,11 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class EventRegistry<T> {
+public class Old_EventRegistry<T> {
 
     private final HashSet<T> storage;
 
-    public EventRegistry() {
+    public Old_EventRegistry() {
         this.storage = new HashSet<>();
     }
 

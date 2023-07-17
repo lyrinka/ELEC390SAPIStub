@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pdi.android;
+package app.uvtracker.sensor.pdi.android.old;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
@@ -13,15 +13,14 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import app.uvtracker.sensor.api.IPacketDrivenSensor;
-import app.uvtracker.sensor.pdi.android.util.EventRegistry;
 import app.uvtracker.sensor.protocol.codec.IPacketCodec;
 import app.uvtracker.sensor.protocol.codec.exception.CodecException;
 import app.uvtracker.sensor.protocol.packet.Packet;
 
-public class AndroidBLESensor implements IPacketDrivenSensor {
+public class Old_AndroidBLESensor implements IPacketDrivenSensor {
 
     @NonNull
-    private static final String TAG = AndroidBLESensor.class.getSimpleName();
+    private static final String TAG = Old_AndroidBLESensor.class.getSimpleName();
 
     @NonNull
     private final BluetoothDevice device;
@@ -33,22 +32,22 @@ public class AndroidBLESensor implements IPacketDrivenSensor {
     private final Context context;
 
     @NonNull
-    private final EventRegistry<Consumer<ConnectionStatus>> connectionCallbackRegistry;
+    private final Old_EventRegistry<Consumer<ConnectionStatus>> connectionCallbackRegistry;
 
     @NonNull
-    private final EventRegistry<Consumer<Packet>> packetCallbackRegistry;
+    private final Old_EventRegistry<Consumer<Packet>> packetCallbackRegistry;
 
     @NonNull
-    private final AndroidBLESensorConnection connection;
+    private final Old_AndroidBLESensorConnection connection;
 
     @SuppressLint("MissingPermission")
-    public AndroidBLESensor(@NonNull BluetoothDevice device, @NonNull Context context) {
+    public Old_AndroidBLESensor(@NonNull BluetoothDevice device, @NonNull Context context) {
         this.device = device;
         this.name = device.getName();
         this.context = context;
-        this.connectionCallbackRegistry = new EventRegistry<>();
-        this.packetCallbackRegistry = new EventRegistry<>();
-        this.connection = new AndroidBLESensorConnection(
+        this.connectionCallbackRegistry = new Old_EventRegistry<>();
+        this.packetCallbackRegistry = new Old_EventRegistry<>();
+        this.connection = new Old_AndroidBLESensorConnection(
                 this,
                 (s) -> this.connectionCallbackRegistry.invoke((f) -> f.accept(s)),
                 (s) -> {
@@ -84,8 +83,8 @@ public class AndroidBLESensor implements IPacketDrivenSensor {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AndroidBLESensor)) return false;
-        AndroidBLESensor that = (AndroidBLESensor) o;
+        if (!(o instanceof Old_AndroidBLESensor)) return false;
+        Old_AndroidBLESensor that = (Old_AndroidBLESensor) o;
         return this.device.getAddress().equals(that.device.getAddress());
     }
 
