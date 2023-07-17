@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import app.uvtracker.sensor.api.ISensor;
+import app.uvtracker.sensor.api.Old_ISensor;
 import app.uvtracker.sensor.pdi.BLEDeviceDesc;
 import app.uvtracker.sensor.pdi.android.util.CancellableDelayedOneTimeTask;
 
@@ -51,7 +51,7 @@ public class Old_AndroidBLESensorConnection extends BluetoothGattCallback {
     private Stage stage;
 
     @NonNull
-    private final Consumer<ISensor.ConnectionStatus> statusCallback;
+    private final Consumer<Old_ISensor.ConnectionStatus> statusCallback;
 
     @NonNull
     private final Consumer<byte[]> dataCallback;
@@ -76,7 +76,7 @@ public class Old_AndroidBLESensorConnection extends BluetoothGattCallback {
     private int sessionWriteType;
 
     public Old_AndroidBLESensorConnection(@NonNull Old_AndroidBLESensor sensor,
-                                          @NonNull Consumer<ISensor.ConnectionStatus> statusCallback,
+                                          @NonNull Consumer<Old_ISensor.ConnectionStatus> statusCallback,
                                           @NonNull Consumer<byte[]> dataCallback) {
         this.stage = Stage.IDLE;
         this.sensor = sensor;
@@ -144,7 +144,7 @@ public class Old_AndroidBLESensorConnection extends BluetoothGattCallback {
         }
         this.setStage(Stage.IDLE);
         this.cancelDelayedTask();
-        this.statusCallback.accept(ISensor.ConnectionStatus.FAILED_RETRY);
+        this.statusCallback.accept(Old_ISensor.ConnectionStatus.FAILED_RETRY);
     }
 
     @Override
@@ -279,7 +279,7 @@ public class Old_AndroidBLESensorConnection extends BluetoothGattCallback {
         this.cancelDelayedTask();
         this.setStage(Stage.ESTABLISHED);
         Log.d(TAG, "- Connection established! We're all done.");
-        this.statusCallback.accept(ISensor.ConnectionStatus.ESTABLISHED);
+        this.statusCallback.accept(Old_ISensor.ConnectionStatus.ESTABLISHED);
     }
 
     // Data exchange
@@ -335,9 +335,9 @@ public class Old_AndroidBLESensorConnection extends BluetoothGattCallback {
         this.setStage(Stage.IDLE);
         this.cancelDelayedTask();
         this.statusCallback.accept(
-                !failed ? ISensor.ConnectionStatus.DISCONNECTED
-                        : retryAdvised ? ISensor.ConnectionStatus.FAILED_RETRY
-                                       : ISensor.ConnectionStatus.FAILED_NO_RETRY
+                !failed ? Old_ISensor.ConnectionStatus.DISCONNECTED
+                        : retryAdvised ? Old_ISensor.ConnectionStatus.FAILED_RETRY
+                                       : Old_ISensor.ConnectionStatus.FAILED_NO_RETRY
         );
     }
 

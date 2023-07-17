@@ -14,8 +14,8 @@ import android.widget.TextView;
 import java.util.Date;
 import java.util.Objects;
 
-import app.uvtracker.sensor.api.IPacketDrivenSensor;
-import app.uvtracker.sensor.api.ISensor;
+import app.uvtracker.sensor.api.Old_IPacketDrivenSensor;
+import app.uvtracker.sensor.api.Old_ISensor;
 import app.uvtracker.sensor.protocol.packet.Packet;
 import app.uvtracker.sensor.protocol.packet.PacketInNewSample;
 import app.uvtracker.sensor.protocol.packet.PacketType;
@@ -26,7 +26,7 @@ public class SensorActivity extends AppCompatActivity {
     private static final String TAG = SensorActivity.class.getSimpleName();
 
     @Nullable
-    private ISensor sensor;
+    private Old_ISensor sensor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +44,7 @@ public class SensorActivity extends AppCompatActivity {
             this.updateStatus(">> " + status);
         });
 
-        IPacketDrivenSensor packetDrivenSensor = (IPacketDrivenSensor)sensor;
+        Old_IPacketDrivenSensor packetDrivenSensor = (Old_IPacketDrivenSensor)sensor;
         packetDrivenSensor.registerPacketReceptionCallback((packet) ->
                 (new Handler(Looper.getMainLooper()))
                 .post(() -> {
@@ -101,7 +101,7 @@ public class SensorActivity extends AppCompatActivity {
         );
         Log.d(TAG, "Prepared packet: " + packet);
 
-        IPacketDrivenSensor sensor = (IPacketDrivenSensor)this.sensor;
+        Old_IPacketDrivenSensor sensor = (Old_IPacketDrivenSensor)this.sensor;
         if(Objects.requireNonNull(sensor).sendPacket(packet))
             this.updateStatus("Sent: \n" + packet);
     }

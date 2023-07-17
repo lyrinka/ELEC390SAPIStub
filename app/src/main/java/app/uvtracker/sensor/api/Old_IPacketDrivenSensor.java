@@ -4,10 +4,9 @@ import androidx.annotation.NonNull;
 
 import java.util.function.Consumer;
 
-import app.uvtracker.sensor.api.ISensor;
 import app.uvtracker.sensor.protocol.packet.Packet;
 
-public interface IPacketDrivenSensor extends ISensor {
+public interface Old_IPacketDrivenSensor extends Old_ISensor {
 
     boolean sendPacket(@NonNull Packet packet);
 

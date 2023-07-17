@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import app.uvtracker.sensor.api.ISensor;
+import app.uvtracker.sensor.api.Old_ISensor;
 import app.uvtracker.sensor.api.scanner.IScanner;
 import app.uvtracker.sensor.api.SensorAPI;
 import app.uvtracker.sensor.api.exception.TransceiverException;
@@ -135,9 +135,9 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         private ViewContent content;
 
         @NonNull
-        private final Consumer<ISensor> callback;
+        private final Consumer<Old_ISensor> callback;
 
-        public ViewHolder(@NonNull View itemView, @NonNull Consumer<ISensor> callback) {
+        public ViewHolder(@NonNull View itemView, @NonNull Consumer<Old_ISensor> callback) {
             super(itemView);
             this.itemView = itemView;
             this.callback = callback;
@@ -160,7 +160,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private static class ViewContent {
 
         @NonNull
-        private final ISensor sensor;
+        private final Old_ISensor sensor;
 
         @NonNull
         private final String address;
@@ -172,7 +172,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         private final boolean active;
 
-        public ViewContent(@NonNull ISensor sensor, @NonNull String address, @Nullable String name, int rssi, boolean active) {
+        public ViewContent(@NonNull Old_ISensor sensor, @NonNull String address, @Nullable String name, int rssi, boolean active) {
             this.sensor = sensor;
             this.address = address;
             this.name = name;
@@ -194,7 +194,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
 
         @NonNull
-        public ISensor getSensor() {
+        public Old_ISensor getSensor() {
             return this.sensor;
         }
 
@@ -204,9 +204,9 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private List<ViewContent> datastore;
 
     @NonNull
-    private final Consumer<ISensor> callback;
+    private final Consumer<Old_ISensor> callback;
 
-    public RecyclerViewAdapter(@NonNull Consumer<ISensor> clickCallback) {
+    public RecyclerViewAdapter(@NonNull Consumer<Old_ISensor> clickCallback) {
         this.datastore = new ArrayList<>();
         this.callback = clickCallback;
     }

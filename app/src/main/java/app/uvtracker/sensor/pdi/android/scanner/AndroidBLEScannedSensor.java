@@ -9,13 +9,13 @@ import java.util.Date;
 import java.util.Objects;
 
 import app.uvtracker.sensor.api.scanner.IScannedSensor;
-import app.uvtracker.sensor.api.ISensor;
+import app.uvtracker.sensor.api.Old_ISensor;
 import app.uvtracker.sensor.pdi.android.old.Old_AndroidBLESensor;
 
 public class AndroidBLEScannedSensor implements IScannedSensor {
 
     @NonNull
-    private final ISensor sensor;
+    private final Old_ISensor sensor;
 
     private int rssi;
 
@@ -26,7 +26,7 @@ public class AndroidBLEScannedSensor implements IScannedSensor {
         this(new Old_AndroidBLESensor(result.getDevice(), context), result.getRssi());
     }
 
-    public AndroidBLEScannedSensor(@NonNull ISensor sensor, int rssi) {
+    public AndroidBLEScannedSensor(@NonNull Old_ISensor sensor, int rssi) {
         this.sensor = sensor;
         this.rssi = rssi;
         this.timestamp = new Date();
@@ -34,7 +34,7 @@ public class AndroidBLEScannedSensor implements IScannedSensor {
 
     @NonNull
     @Override
-    public ISensor getSensor() {
+    public Old_ISensor getSensor() {
         return this.sensor;
     }
 

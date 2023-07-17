@@ -12,12 +12,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import app.uvtracker.sensor.api.IPacketDrivenSensor;
+import app.uvtracker.sensor.api.Old_IPacketDrivenSensor;
 import app.uvtracker.sensor.protocol.codec.IPacketCodec;
 import app.uvtracker.sensor.protocol.codec.exception.CodecException;
 import app.uvtracker.sensor.protocol.packet.Packet;
 
-public class Old_AndroidBLESensor implements IPacketDrivenSensor {
+public class Old_AndroidBLESensor implements Old_IPacketDrivenSensor {
 
     @NonNull
     private static final String TAG = Old_AndroidBLESensor.class.getSimpleName();

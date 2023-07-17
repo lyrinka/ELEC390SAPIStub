@@ -4,12 +4,12 @@ import androidx.annotation.NonNull;
 
 import java.util.Date;
 
-import app.uvtracker.sensor.api.ISensor;
+import app.uvtracker.sensor.api.Old_ISensor;
 
 public interface IScannedSensor {
 
     @NonNull
-    ISensor getSensor();
+    Old_ISensor getSensor();
 
     int getRssi();
 
