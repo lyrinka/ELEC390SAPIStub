@@ -13,7 +13,7 @@ public class DataReceivedEvent {
 
     @NonNull
     public byte[] getData() {
-        return data;
+        return this.data;
     }
 
 }

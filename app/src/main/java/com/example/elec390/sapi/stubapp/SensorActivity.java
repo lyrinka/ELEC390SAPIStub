@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Date;
+import java.util.Objects;
 
 import app.uvtracker.sensor.api.event.EventHandler;
 import app.uvtracker.sensor.api.event.IEventListener;
@@ -58,6 +59,9 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
             this.sensor.reset();
             Log.d(TAG, "Button: Connection flow force reset performed.");
         });
+
+        Button btnTest = this.findViewById(R.id.sensor_btn_test);
+        btnTest.setOnClickListener((v) -> this.test());
     }
 
     @EventHandler
@@ -77,6 +81,13 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         sb.append(date.getTime() % 1000).append("\n");
         sb.append(msg);
         textState.setText(sb.toString());
+    }
+
+    private void test() {
+        byte[] buffer = new byte[1000];
+        for(int i = 0; i < buffer.length; i++)
+            buffer[i] = '$';
+        Objects.requireNonNull(this.sensor).write(buffer);
     }
 
 }

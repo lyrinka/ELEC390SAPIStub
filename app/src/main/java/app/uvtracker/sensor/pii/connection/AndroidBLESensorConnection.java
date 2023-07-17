@@ -68,7 +68,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
                 new FlowControlledBuffer.Config(
                         BLEOptions.Device.Serial.Write.Buffer.CAPACITY,
                         BLEOptions.Device.MTU_REQUIRED - 3,
-                        BLEOptions.Device.Serial.Write.Buffer.SPEED_BPMS,
+                        BLEOptions.Device.Serial.Write.Buffer.SPEED_BPS,
                         BLEOptions.Device.Serial.Write.Buffer.STICKY_DLY,
                         BLEOptions.Device.Serial.Write.Buffer.MIN_DLY
                 )
@@ -293,7 +293,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         write.setWriteType(BLEOptions.Device.Serial.Write.WRITE_TYPE);
         write.setValue(data);
         this.getGatt().writeCharacteristic(write);
-        this.debug("- Written %1$d bytes." + data.length);
+        this.debug("- Written %1$d bytes.", data.length);
     }
 
     protected void onDeviceDisconnected() {
@@ -476,7 +476,7 @@ class FlowControlledBuffer {
     public static class Config {
 
         public final int capacity;      // Capacity in bytes
-        public final int speedLimit;    // Speed limit in bytes per ms. Set as 0 to disable
+        public final int speedLimit;    // Speed limit in bytes per second. Set as 0 to disable
         public final int mtu;           // MTU in bytes
         public final int stickyDelay;   // Initial sticky delay in ms
         public final int minDelay;      // Minimum throttling to apply
@@ -560,7 +560,7 @@ class FlowControlledBuffer {
         }
         int delay = 0;
         if(this.config.speedLimit != 0)
-            delay = Math.min(bytesToWrite / this.config.speedLimit, this.config.minDelay);
+            delay = Math.max(bytesToWrite * 1000 / this.config.speedLimit, this.config.minDelay);
         Log.d(TAG, String.format("- Executor decided to write %1$d out of %2$d bytes and impose a %3$dms delay.", bytesToWrite, bytesAtBuffer, delay));
         this.dataSink.accept(buffer);
         synchronized(this) {

@@ -35,8 +35,8 @@ public class BLEOptions {
                 public static int WRITE_TYPE = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE;
                 @SuppressWarnings("CanBeFinal")
                 public static class Buffer {
-                    public static int CAPACITY = 2048;
-                    public static int SPEED_BPMS = 8; // Speed in bytes per ms, approx. 7.8kBps
+                    public static int CAPACITY = 4096;
+                    public static int SPEED_BPS = 950;
                     public static int STICKY_DLY = 5;
                     public static int MIN_DLY = 1;
                 }
