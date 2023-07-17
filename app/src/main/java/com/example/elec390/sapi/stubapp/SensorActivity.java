@@ -9,19 +9,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 
+import app.uvtracker.sensor.pdi.android.AndroidBLESensor;
+import app.uvtracker.sensor.pii.ISensor;
+import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
 import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
 import app.uvtracker.sensor.pii.connection.packet.PacketReceivedEvent;
-import app.uvtracker.sensor.pii.connection.packet.SensorPacketConnection;
 import app.uvtracker.sensor.pii.connection.packet.UnrecognizableMessageReceivedEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
-import app.uvtracker.sensor.pdi.android.connection.bytestream.AndroidBLESensorBytestreamConnection;
 import app.uvtracker.sensor.pii.connection.shared.ConnectionStateChangeEvent;
-import app.uvtracker.sensor.pii.connection.bytestream.ISensorBytestreamConnection;
 import app.uvtracker.sensor.protocol.packet.Packet;
 import app.uvtracker.sensor.protocol.packet.PacketOutBuzz;
 
@@ -31,10 +30,13 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     private static final String TAG = SensorActivity.class.getSimpleName();
 
     @Nullable
-    private ISensorBytestreamConnection sensor1;
+    private ISensor sensor;
 
     @Nullable
-    private ISensorPacketConnection sensor2;
+    private ISensorConnection connection;
+
+    @Nullable
+    private ISensorPacketConnection testPacketConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,32 +44,32 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         setContentView(R.layout.activity_sensor);
 
         if(IntentDataHelper.sensor == null) this.finish();
-        this.sensor1 = new AndroidBLESensorBytestreamConnection(IntentDataHelper.sensor, this);
-        this.sensor2 = new SensorPacketConnection(this.sensor1);
+
+        this.sensor = IntentDataHelper.sensor;
+        this.connection = sensor.getConnection();
+        this.connection.registerListener(this);
+        ((AndroidBLESensor)this.sensor).getFactoryBuilds().packetBased.registerListener(this);
 
         TextView text = this.findViewById(R.id.sensor_txt_disp);
-//      text.setText(this.sensor.getName());
-
-        this.sensor2.registerListener(this);
-
+        text.setText(this.sensor.getName());
 
         Button btnConnect = this.findViewById(R.id.sensor_btn_con);
         Button btnDisconnect = this.findViewById(R.id.sensor_btn_dis);
         Button btnReset = this.findViewById(R.id.sensor_btn_rst);
         btnConnect.setOnClickListener(v -> {
-            if(this.sensor2.connect()) {
+            if(this.connection.connect()) {
                 Log.d(TAG, "Button: Initiated connection flow.");
             }
             else Log.d(TAG, "Button: Connection flow initiation request ignored.");
         });
         btnDisconnect.setOnClickListener(v -> {
-            if(this.sensor2.disconnect()) {
+            if(this.connection.disconnect()) {
                 Log.d(TAG, "Button: Initiated disconnection.");
             }
             else Log.d(TAG, "Button: Disconnection initiation request ignored.");
         });
         btnReset.setOnClickListener(v -> {
-            this.sensor2.reset();
+            this.connection.reset();
             Log.d(TAG, "Button: Connection flow force reset performed.");
         });
 
@@ -75,20 +77,20 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         btnTest.setOnClickListener((v) -> this.test());
     }
 
-    @EventHandler
+    @EventHandler // Source: ISensorConnection
     public void onConnectionStatusChange(ConnectionStateChangeEvent event) {
         String status = event.getStage() + " " + event.getPercentage() + "%";
         Log.d(TAG, ">>> Callback: " + status);
         this.updateStatus(">>> " + status);
     }
 
-    @EventHandler
+    @EventHandler // Source: ISensorPacketConnection
     public void onPacketReceived(PacketReceivedEvent event) {
         Log.d(TAG, "Received packet " + event.getPacket());
         this.updateStatus(event.getPacket().toString());
     }
 
-    @EventHandler
+    @EventHandler // Source: ISensorPacketConnection
     public void onGarbageReceived(UnrecognizableMessageReceivedEvent event) {
         Log.d(TAG, "Received garbage " + event.getMessageAsUnicode());
         this.updateStatus(event.getMessageAsUnicode());
@@ -108,7 +110,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     private void test() {
         Packet packet = new PacketOutBuzz();
-        Objects.requireNonNull(this.sensor2).write(packet);
+        Objects.requireNonNull(this.testPacketConnection).write(packet);
     }
 
 }

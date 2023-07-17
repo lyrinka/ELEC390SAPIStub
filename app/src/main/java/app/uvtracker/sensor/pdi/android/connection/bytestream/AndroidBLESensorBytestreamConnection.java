@@ -188,7 +188,7 @@ public class AndroidBLESensorBytestreamConnection extends EventRegistry implemen
 
     protected void onDeviceMTURequested(int mtu) {
         this.debug("onDeviceMTURequested() [EV]");
-        this.debug("- New MTU: $1%d", mtu);
+        this.debug("- New MTU: %1$d", mtu);
         if(mtu < BLEOptions.Device.MTU_REQUIRED) {
             this.debug("- Device MTU not large enough.");
             this.gracefullyClose(true, false);

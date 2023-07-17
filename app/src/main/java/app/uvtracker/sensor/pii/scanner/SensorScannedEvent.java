@@ -1,29 +1,29 @@
-package app.uvtracker.sensor.pdi.android.scanner;
-
-import android.bluetooth.BluetoothDevice;
+package app.uvtracker.sensor.pii.scanner;
 
 import androidx.annotation.NonNull;
 
 import java.util.Collection;
 
+import app.uvtracker.sensor.pii.ISensor;
+
 public class SensorScannedEvent {
 
     @NonNull
-    private final BluetoothDevice sensor;
+    private final ISensor sensor;
 
     private final boolean isFirstTime;
 
     @NonNull
-    private final Collection<BluetoothDevice> sensors;
+    private final Collection<? extends ISensor> sensors;
 
-    public SensorScannedEvent(@NonNull BluetoothDevice sensor, boolean isFirstTime, @NonNull Collection<BluetoothDevice> sensors) {
+    public SensorScannedEvent(@NonNull ISensor sensor, boolean isFirstTime, @NonNull Collection<? extends ISensor> sensors) {
         this.sensor = sensor;
         this.isFirstTime = isFirstTime;
         this.sensors = sensors;
     }
 
     @NonNull
-    public BluetoothDevice getSensor() {
+    public ISensor getSensor() {
         return sensor;
     }
 
@@ -32,7 +32,7 @@ public class SensorScannedEvent {
     }
 
     @NonNull
-    public Collection<BluetoothDevice> getSensors() {
+    public Collection<? extends ISensor> getSensors() {
         return sensors;
     }
 

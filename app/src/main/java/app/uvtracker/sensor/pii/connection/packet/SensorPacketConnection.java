@@ -49,7 +49,7 @@ public class SensorPacketConnection extends EventRegistry implements ISensorPack
 
     // TODO: any better way to propagate these events up?
     @EventHandler
-    public void onConnectionStateChange(@NonNull ConnectionStateChangeEvent event) {
+    protected void onConnectionStateChange(@NonNull ConnectionStateChangeEvent event) {
         this.dispatch(event);
     }
 
@@ -70,7 +70,7 @@ public class SensorPacketConnection extends EventRegistry implements ISensorPack
     }
 
     @EventHandler
-    public void onBytesReceived(@NonNull BytesReceivedEvent event) {
+    protected void onBytesReceived(@NonNull BytesReceivedEvent event) {
         byte[] bytes = event.getData();
         for(byte b : bytes) {
             String message = parser.accept(b);
