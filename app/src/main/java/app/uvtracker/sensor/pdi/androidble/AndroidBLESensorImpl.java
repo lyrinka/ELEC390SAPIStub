@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pdi.android;
+package app.uvtracker.sensor.pdi.androidble;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
@@ -10,15 +10,15 @@ import androidx.annotation.Nullable;
 
 import java.util.Date;
 
-import app.uvtracker.sensor.pdi.android.connection.bytestream.AndroidBLESensorBytestreamConnection;
+import app.uvtracker.sensor.pdi.androidble.connection.bytestream.AndroidBLESensorBytestreamConnectionImpl;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
-import app.uvtracker.sensor.pii.connection.application.SensorConnection;
+import app.uvtracker.sensor.pii.connection.application.PIISensorConnectionImpl;
 import app.uvtracker.sensor.pii.connection.bytestream.ISensorBytestreamConnection;
 import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
-import app.uvtracker.sensor.pii.connection.packet.SensorPacketConnection;
+import app.uvtracker.sensor.pii.connection.packet.PIISensorPacketConnectionImpl;
 
-public class AndroidBLESensor implements ISensor {
+public class AndroidBLESensorImpl implements ISensor {
 
     public static class ConnectionFactory {
 
@@ -32,9 +32,9 @@ public class AndroidBLESensor implements ISensor {
         public final ISensorConnection applicationHandle;
 
         public ConnectionFactory(@NonNull BluetoothDevice device, @NonNull Context context) {
-            this.bytestreamBased = new AndroidBLESensorBytestreamConnection(device, context);
-            this.packetBased = new SensorPacketConnection(this.bytestreamBased);
-            this.applicationHandle = new SensorConnection(this.packetBased);
+            this.bytestreamBased = new AndroidBLESensorBytestreamConnectionImpl(device, context);
+            this.packetBased = new PIISensorPacketConnectionImpl(this.bytestreamBased);
+            this.applicationHandle = new PIISensorConnectionImpl(this.packetBased);
         }
 
     }
@@ -60,7 +60,7 @@ public class AndroidBLESensor implements ISensor {
     private ConnectionFactory factory;
 
     @SuppressLint("MissingPermission")
-    public AndroidBLESensor(@NonNull ScanResult result, @NonNull Context context) {
+    public AndroidBLESensorImpl(@NonNull ScanResult result, @NonNull Context context) {
         this.context = context;
         this.platformDevice = result.getDevice();
         this.address = this.platformDevice.getAddress();

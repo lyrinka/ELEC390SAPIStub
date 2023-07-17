@@ -1,4 +1,4 @@
-package com.example.elec390.sapi.stubapp.util;
+package com.example.elec390.sapi.stubapp;
 
 import android.Manifest;
 import android.app.Activity;

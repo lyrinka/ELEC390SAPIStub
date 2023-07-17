@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pdi.android.scanner;
+package app.uvtracker.sensor.pdi.androidble.scanner;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -25,17 +25,17 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import app.uvtracker.sensor.pdi.BLEOptions;
-import app.uvtracker.sensor.pdi.android.AndroidBLESensor;
+import app.uvtracker.sensor.pdi.androidble.AndroidBLESensorImpl;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.event.EventRegistry;
 import app.uvtracker.sensor.pii.scanner.IScanner;
-import app.uvtracker.sensor.pii.scanner.SensorScannedEvent;
+import app.uvtracker.sensor.pii.scanner.event.SensorScannedEvent;
 import app.uvtracker.sensor.pii.scanner.exception.TransceiverException;
 import app.uvtracker.sensor.pii.scanner.exception.TransceiverNoPermException;
 import app.uvtracker.sensor.pii.scanner.exception.TransceiverOffException;
 import app.uvtracker.sensor.pii.scanner.exception.TransceiverUnsupportedException;
 
-public class AndroidBLEScanner extends EventRegistry implements IScanner {
+public class AndroidBLEScannerImpl extends EventRegistry implements IScanner {
 
     @NonNull
     private final Handler handler;
@@ -55,13 +55,13 @@ public class AndroidBLEScanner extends EventRegistry implements IScanner {
     private final BluetoothScanCallback callback;
 
     @NonNull
-    private final ConcurrentMap<String, AndroidBLESensor> map;
+    private final ConcurrentMap<String, AndroidBLESensorImpl> map;
 
-    public AndroidBLEScanner(@NonNull Context context) throws TransceiverException {
+    public AndroidBLEScannerImpl(@NonNull Context context) throws TransceiverException {
         this(context, null);
     }
 
-    public AndroidBLEScanner(@NonNull Context context, @Nullable Predicate<Context> permChecker) throws TransceiverException {
+    public AndroidBLEScannerImpl(@NonNull Context context, @Nullable Predicate<Context> permChecker) throws TransceiverException {
         this.handler = new Handler(Looper.getMainLooper()); // TODO: which thread to use?
         this.context = context;
         this.permChecker = permChecker;
@@ -128,9 +128,9 @@ public class AndroidBLEScanner extends EventRegistry implements IScanner {
         BluetoothDevice device = result.getDevice();
         String address = device.getAddress();
         boolean firstTime = !this.map.containsKey(address);
-        AndroidBLESensor pdiSensor;
+        AndroidBLESensorImpl pdiSensor;
         if(firstTime) {
-            pdiSensor = new AndroidBLESensor(result, this.context);
+            pdiSensor = new AndroidBLESensorImpl(result, this.context);
             this.map.put(address, pdiSensor);
         }
         else {

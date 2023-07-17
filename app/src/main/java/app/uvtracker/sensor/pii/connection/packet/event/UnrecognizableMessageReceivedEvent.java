@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pii.connection.packet;
+package app.uvtracker.sensor.pii.connection.packet.event;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

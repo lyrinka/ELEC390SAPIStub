@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pdi.android.connection.bytestream;
+package app.uvtracker.sensor.pdi.androidble.connection.bytestream;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
@@ -23,15 +23,15 @@ import java.util.function.Consumer;
 
 import app.uvtracker.sensor.pii.event.EventRegistry;
 import app.uvtracker.sensor.pdi.BLEOptions;
-import app.uvtracker.sensor.pii.connection.bytestream.BytesReceivedEvent;
-import app.uvtracker.sensor.pii.connection.shared.ConnectionStateChangeEvent;
+import app.uvtracker.sensor.pii.connection.bytestream.event.BytesReceivedEvent;
+import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
 import app.uvtracker.sensor.pii.connection.bytestream.ISensorBytestreamConnection;
 
 @SuppressLint("MissingPermission")
-public class AndroidBLESensorBytestreamConnection extends EventRegistry implements ISensorBytestreamConnection {
+public class AndroidBLESensorBytestreamConnectionImpl extends EventRegistry implements ISensorBytestreamConnection {
 
     @NonNull
-    private static final String TAG = AndroidBLESensorBytestreamConnection.class.getSimpleName();
+    private static final String TAG = AndroidBLESensorBytestreamConnectionImpl.class.getSimpleName();
 
     @NonNull
     private final Handler handler;
@@ -60,7 +60,7 @@ public class AndroidBLESensorBytestreamConnection extends EventRegistry implemen
     @NonNull
     private final FlowControlledBuffer writeStream;
 
-    public AndroidBLESensorBytestreamConnection(@NonNull BluetoothDevice device, @NonNull Context context) {
+    public AndroidBLESensorBytestreamConnectionImpl(@NonNull BluetoothDevice device, @NonNull Context context) {
         this.handler = new Handler(Looper.getMainLooper()); // TODO: which thread to use?
         this.context = context;
         this.device = device;
@@ -402,9 +402,9 @@ class DelayedTask implements Runnable {
 class BluetoothGattCallbackImpl extends BluetoothGattCallback {
 
     @NonNull
-    private final AndroidBLESensorBytestreamConnection connection;
+    private final AndroidBLESensorBytestreamConnectionImpl connection;
 
-    public BluetoothGattCallbackImpl(@NonNull AndroidBLESensorBytestreamConnection connection) {
+    public BluetoothGattCallbackImpl(@NonNull AndroidBLESensorBytestreamConnectionImpl connection) {
         this.connection = connection;
     }
 

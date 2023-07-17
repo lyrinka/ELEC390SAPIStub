@@ -3,14 +3,14 @@ package app.uvtracker.sensor.pii.connection.application;
 import androidx.annotation.NonNull;
 
 import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
-import app.uvtracker.sensor.pii.connection.packet.ParsedPacketReceivedEvent;
-import app.uvtracker.sensor.pii.connection.shared.ConnectionStateChangeEvent;
+import app.uvtracker.sensor.pii.connection.packet.event.ParsedPacketReceivedEvent;
+import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.EventRegistry;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.event.IEventSource;
 
-public class SensorConnection extends EventRegistry implements ISensorConnection, IEventListener {
+public class PIISensorConnectionImpl extends EventRegistry implements ISensorConnection, IEventListener {
 
     @NonNull
     private final ISensorPacketConnection baseConnection;
@@ -18,7 +18,7 @@ public class SensorConnection extends EventRegistry implements ISensorConnection
     @NonNull
     private final EventRegistry packetEventRegistry;
 
-    public SensorConnection(@NonNull ISensorPacketConnection baseConnection) {
+    public PIISensorConnectionImpl(@NonNull ISensorPacketConnection baseConnection) {
         this.packetEventRegistry = new EventRegistry();
         this.baseConnection = baseConnection;
         this.registerListener(this);
@@ -57,5 +57,7 @@ public class SensorConnection extends EventRegistry implements ISensorConnection
         return this.packetEventRegistry;
     }
 
+
+    // TODO: implement this
 
 }

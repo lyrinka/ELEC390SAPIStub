@@ -7,9 +7,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
-import app.uvtracker.sensor.pii.connection.bytestream.BytesReceivedEvent;
+import app.uvtracker.sensor.pii.connection.bytestream.event.BytesReceivedEvent;
 import app.uvtracker.sensor.pii.connection.bytestream.ISensorBytestreamConnection;
-import app.uvtracker.sensor.pii.connection.shared.ConnectionStateChangeEvent;
+import app.uvtracker.sensor.pii.connection.packet.event.PacketReceivedEvent;
+import app.uvtracker.sensor.pii.connection.packet.event.UnrecognizableMessageReceivedEvent;
+import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.EventRegistry;
 import app.uvtracker.sensor.pii.event.IEventListener;
@@ -17,7 +19,7 @@ import app.uvtracker.sensor.protocol.codec.IPacketCodec;
 import app.uvtracker.sensor.protocol.codec.exception.CodecException;
 import app.uvtracker.sensor.protocol.packet.Packet;
 
-public class SensorPacketConnection extends EventRegistry implements ISensorPacketConnection, IEventListener {
+public class PIISensorPacketConnectionImpl extends EventRegistry implements ISensorPacketConnection, IEventListener {
 
     @NonNull
     private final ISensorBytestreamConnection baseConnection;
@@ -25,7 +27,7 @@ public class SensorPacketConnection extends EventRegistry implements ISensorPack
     @NonNull
     private final LineParser parser;
 
-    public SensorPacketConnection(@NonNull ISensorBytestreamConnection baseConnection) {
+    public PIISensorPacketConnectionImpl(@NonNull ISensorBytestreamConnection baseConnection) {
         this.baseConnection = baseConnection;
         this.baseConnection.registerListener(this);
         this.parser = new LineParser();

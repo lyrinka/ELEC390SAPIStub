@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pii.scanner;
+package app.uvtracker.sensor.pii.scanner.event;
 
 import androidx.annotation.NonNull;
 

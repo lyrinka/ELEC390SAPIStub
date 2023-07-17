@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pii.connection.shared;
+package app.uvtracker.sensor.pii.connection.shared.event;
 
 import androidx.annotation.NonNull;
 

@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pii.connection.bytestream;
+package app.uvtracker.sensor.pii.connection.bytestream.event;
 
 import androidx.annotation.NonNull;
 

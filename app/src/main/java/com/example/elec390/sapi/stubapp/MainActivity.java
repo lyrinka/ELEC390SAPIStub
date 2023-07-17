@@ -17,8 +17,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.elec390.sapi.stubapp.util.BLEPermissions;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -33,7 +31,7 @@ import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.scanner.IScanner;
 import app.uvtracker.sensor.pii.scanner.exception.TransceiverException;
-import app.uvtracker.sensor.pii.scanner.SensorScannedEvent;
+import app.uvtracker.sensor.pii.scanner.event.SensorScannedEvent;
 
 public class MainActivity extends AppCompatActivity implements IEventListener, Runnable {
 

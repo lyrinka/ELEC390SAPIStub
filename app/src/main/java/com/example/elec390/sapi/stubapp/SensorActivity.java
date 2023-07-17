@@ -12,15 +12,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Date;
 import java.util.Objects;
 
-import app.uvtracker.sensor.pdi.android.AndroidBLESensor;
+import app.uvtracker.sensor.pdi.androidble.AndroidBLESensorImpl;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
 import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
-import app.uvtracker.sensor.pii.connection.packet.PacketReceivedEvent;
-import app.uvtracker.sensor.pii.connection.packet.UnrecognizableMessageReceivedEvent;
+import app.uvtracker.sensor.pii.connection.packet.event.PacketReceivedEvent;
+import app.uvtracker.sensor.pii.connection.packet.event.UnrecognizableMessageReceivedEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
-import app.uvtracker.sensor.pii.connection.shared.ConnectionStateChangeEvent;
+import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
 import app.uvtracker.sensor.protocol.packet.Packet;
 import app.uvtracker.sensor.protocol.packet.PacketOutBuzz;
 
@@ -48,7 +48,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         this.sensor = IntentDataHelper.sensor;
         this.connection = sensor.getConnection();
         this.connection.registerListener(this);
-        ((AndroidBLESensor)this.sensor).getFactoryBuilds().packetBased.registerListener(this);
+        ((AndroidBLESensorImpl)this.sensor).getFactoryBuilds().packetBased.registerListener(this);
 
         TextView text = this.findViewById(R.id.sensor_txt_disp);
         text.setText(this.sensor.getName());
