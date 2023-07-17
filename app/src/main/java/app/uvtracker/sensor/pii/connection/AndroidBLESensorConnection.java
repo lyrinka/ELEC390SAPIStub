@@ -141,15 +141,21 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
             this.debug("- Request ignored.");
             return false;
         }
-        this.getGatt().disconnect();
-        this.setStage(Stage.DISCONNECTING);
-        this.setDelayedTask(this::reset, BLEOptions.Connection.DISCONNECTION_TIMEOUT);
-        this.dispatch(ConnectionStageChangeEvent.Stage.DISCONNECTING);
+        if(this.gattObj != null) {
+            this.getGatt().disconnect();
+            this.setStage(Stage.DISCONNECTING);
+            this.setDelayedTask(this::reset, BLEOptions.Connection.DISCONNECTION_TIMEOUT);
+            this.dispatch(ConnectionStageChangeEvent.Stage.DISCONNECTING);
+        }
+        else {
+            this.gracefullyClose(true, true);
+        }
         return true;
     }
 
     protected void onDeviceConnected(BluetoothGatt gatt) {
         this.debug("onDeviceConnected() [EV]");
+        // TODO: when the device turns on after application-level timeout, the device still gets connected.
         this.gattObj = gatt;
         this.getGatt().requestMtu(BLEOptions.Device.REQUEST_MTU);
         this.setStage(Stage.REQUESTING_MTU);
@@ -204,7 +210,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
     }
 
     protected void onDescriptorWritten(BluetoothGattDescriptor descriptor) {
-        this.debug("onDeviceEnumerated() [EV]");
+        this.debug("onDescriptorWritten() [EV]");
         if(     descriptor == null
             || !descriptor.getCharacteristic().getUuid()
                     .equals(this.getEndpoints().read.getUuid())
@@ -259,9 +265,16 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
     }
 
     private void gracefullyClose(boolean failed, boolean retryAdvised) {
-        this.debug(">> Gracefully closing, failed: %1$s, retry advised: $2$s", failed, retryAdvised);
+        this.debug(">> Gracefully closing, failed: %1$s, retry advised: %2$s", failed, retryAdvised);
         this.cancelDelayedTask();
-        this.getGatt().close();
+        if(this.gattObj != null) {
+            this.getGatt().close();
+        }
+        else {
+            failed = true;
+            retryAdvised = true;
+            this.debug(">> Gatt object is null.");
+        }
         this.setStage(failed ? Stage.CRASHED : Stage.DISCONNECTED);
         this.wipeReferences();
         this.dispatch(!failed ? ConnectionStageChangeEvent.Stage.DISCONNECTED : retryAdvised ? ConnectionStageChangeEvent.Stage.FAILED_RETRY : ConnectionStageChangeEvent.Stage.FAILED_NO_RETRY);

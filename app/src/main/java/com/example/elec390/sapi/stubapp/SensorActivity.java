@@ -1,109 +1,70 @@
 package com.example.elec390.sapi.stubapp;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.util.Date;
-import java.util.Objects;
 
-import app.uvtracker.sensor.api.Old_IPacketDrivenSensor;
-import app.uvtracker.sensor.api.Old_ISensor;
-import app.uvtracker.sensor.protocol.packet.Packet;
-import app.uvtracker.sensor.protocol.packet.PacketInNewSample;
-import app.uvtracker.sensor.protocol.packet.PacketType;
+import app.uvtracker.sensor.api.event.EventHandler;
+import app.uvtracker.sensor.api.event.IEventListener;
+import app.uvtracker.sensor.pii.connection.AndroidBLESensorConnection;
+import app.uvtracker.sensor.pii.connection.ConnectionStageChangeEvent;
+import app.uvtracker.sensor.pii.connection.ISensorConnection;
 
-public class SensorActivity extends AppCompatActivity {
+public class SensorActivity extends AppCompatActivity implements IEventListener {
 
     @NonNull
     private static final String TAG = SensorActivity.class.getSimpleName();
 
     @Nullable
-    private Old_ISensor sensor;
+    private ISensorConnection sensor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sensor);
 
-        this.sensor = IntentDataHelper.sensor;
-        if(this.sensor == null) this.finish();
+        if(IntentDataHelper.sensor == null) this.finish();
+        this.sensor = new AndroidBLESensorConnection(IntentDataHelper.sensor, this);
 
         TextView text = this.findViewById(R.id.sensor_txt_disp);
-        text.setText(this.sensor.getName());
+//      text.setText(this.sensor.getName());
 
-        this.sensor.registerConnectionStatusCallback((status) -> {
-            Log.d(TAG, ">>> Callback: " + status.toString());
-            this.updateStatus(">> " + status);
-        });
+        this.sensor.registerListener(this);
 
-        Old_IPacketDrivenSensor packetDrivenSensor = (Old_IPacketDrivenSensor)sensor;
-        packetDrivenSensor.registerPacketReceptionCallback((packet) ->
-                (new Handler(Looper.getMainLooper()))
-                .post(() -> {
-                    if(packet instanceof PacketInNewSample) {
-                        float lux = 0.2f * ((PacketInNewSample)packet).getIntensityVIS();
-                        float uvi = 0.017142857f * ((PacketInNewSample)packet).getIntensityUV();
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(packet).append("\n");
-                        sb.append("lux: ").append(lux);
-                        sb.append(", uv: ").append(uvi);
-                        this.updateStatus(sb.toString());
-                    }
-                    else {
-                        this.updateStatus("Received: \n" + packet.toString());
-                    }
-                })
-        );
 
         Button btnConnect = this.findViewById(R.id.sensor_btn_con);
         Button btnDisconnect = this.findViewById(R.id.sensor_btn_dis);
         Button btnReset = this.findViewById(R.id.sensor_btn_rst);
         btnConnect.setOnClickListener(v -> {
             if(this.sensor.connect()) {
-                this.updateStatus(">> Connecting...");
                 Log.d(TAG, "Button: Initiated connection flow.");
             }
             else Log.d(TAG, "Button: Connection flow initiation request ignored.");
         });
         btnDisconnect.setOnClickListener(v -> {
             if(this.sensor.disconnect()) {
-                this.updateStatus(">> Disconnecting..");
                 Log.d(TAG, "Button: Initiated disconnection.");
             }
             else Log.d(TAG, "Button: Disconnection initiation request ignored.");
         });
         btnReset.setOnClickListener(v -> {
-            this.sensor.forceReset();
+            this.sensor.reset();
             Log.d(TAG, "Button: Connection flow force reset performed.");
-        });
-
-        Button btnTest = this.findViewById(R.id.sensor_btn_test);
-        btnTest.setOnClickListener(v -> {
-            this.testSendPacket();
-            Log.d(TAG, "Button: Test performed.");
         });
     }
 
-    private void testSendPacket() {
-        Packet packet = new Packet(
-                PacketType.OUT.BUZZ,
-                new byte[] {
-                        0x12, 0x34, 0x56,
-                }
-        );
-        Log.d(TAG, "Prepared packet: " + packet);
-
-        Old_IPacketDrivenSensor sensor = (Old_IPacketDrivenSensor)this.sensor;
-        if(Objects.requireNonNull(sensor).sendPacket(packet))
-            this.updateStatus("Sent: \n" + packet);
+    @EventHandler
+    public void onConnectionStatusChange(ConnectionStageChangeEvent event) {
+        String status = event.getStage() + " " + event.getPercentage() + "%";
+        Log.d(TAG, ">>> Callback: " + status);
+        this.updateStatus(">>> " + status);
     }
 
     private void updateStatus(String msg) {

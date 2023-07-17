@@ -22,7 +22,7 @@ public class EventRegistry implements IEventSource {
     }
 
     @Override
-    public void register(IEventListener listener) {
+    public void registerListener(IEventListener listener) {
         this.storage.addAll(
                 Arrays.stream(listener.getClass().getMethods())
                         .map(method -> EventAcceptor.getHandlerMethod(listener, method))

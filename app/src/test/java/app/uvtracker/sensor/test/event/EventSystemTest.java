@@ -15,7 +15,7 @@ public class EventSystemTest implements IEventListener {
     @Test
     public void testBasic() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         EventRegistry registry = new EventRegistry();
-        registry.register(this);
+        registry.registerListener(this);
 
         Cat cat1 = new Cat("Meowy");
         Dog dog1 = new Dog("Barky");

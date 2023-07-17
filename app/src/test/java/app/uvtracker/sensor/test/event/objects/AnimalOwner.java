@@ -20,6 +20,7 @@ public class AnimalOwner {
         return this;
     }
 
+    @NonNull
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
