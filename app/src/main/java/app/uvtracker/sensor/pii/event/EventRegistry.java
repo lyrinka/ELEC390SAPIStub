@@ -24,7 +24,7 @@ public class EventRegistry implements IEventSource {
     @Override
     public void registerListener(IEventListener listener) {
         this.storage.addAll(
-                Arrays.stream(listener.getClass().getMethods())
+                Arrays.stream(listener.getClass().getDeclaredMethods())
                         .map(method -> EventAcceptor.getHandlerMethod(listener, method))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList())
@@ -36,7 +36,7 @@ public class EventRegistry implements IEventSource {
         this.storage.clear();
     }
 
-    protected void dispatch(Object eventObject) {
+    public void dispatch(Object eventObject) {
         this.storage.forEach(m -> m.tryCall(eventObject));
     }
 
@@ -69,6 +69,16 @@ class EventAcceptor {
         }
         if(!method.getReturnType().toString().equals("void")) {
             Log.i(TAG, "In class " + listener.getClass().getSimpleName() + ", method " + method.toGenericString() + " is annotated as event handler but has a return value. The return value will be discarded.");
+        }
+        if(!method.isAccessible()) {
+            try {
+                method.setAccessible(true);
+            }
+            catch(SecurityException ex) {
+                Log.w(TAG, "In class " + listener.getClass().getSimpleName() + ", method " + method.toGenericString() + " count not be set public.");
+                ex.printStackTrace();
+                return null;
+            }
         }
         return new EventAcceptor(listener, method, method.getParameterTypes()[0], annotation);
     }

@@ -15,9 +15,9 @@ import app.uvtracker.sensor.protocol.codec.exception.MTUExceededException;
 import app.uvtracker.sensor.protocol.codec.exception.PacketFormatException;
 import app.uvtracker.sensor.protocol.codec.helper.Base93Helper;
 import app.uvtracker.sensor.protocol.codec.helper.CRC8Helper;
-import app.uvtracker.sensor.protocol.packet.Packet;
-import app.uvtracker.sensor.protocol.packet.PacketDirection;
-import app.uvtracker.sensor.protocol.packet.PacketType;
+import app.uvtracker.sensor.protocol.packet.base.Packet;
+import app.uvtracker.sensor.protocol.packet.type.PacketDirection;
+import app.uvtracker.sensor.protocol.packet.type.PacketType;
 
 public class PacketCodecBase93NoAESImpl implements IPacketCodec {
 

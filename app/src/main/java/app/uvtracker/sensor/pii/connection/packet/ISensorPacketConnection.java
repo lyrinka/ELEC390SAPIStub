@@ -3,7 +3,7 @@ package app.uvtracker.sensor.pii.connection.packet;
 import androidx.annotation.NonNull;
 
 import app.uvtracker.sensor.pii.connection.shared.IConnectable;
-import app.uvtracker.sensor.protocol.packet.Packet;
+import app.uvtracker.sensor.protocol.packet.base.Packet;
 
 public interface ISensorPacketConnection extends IConnectable {
 
