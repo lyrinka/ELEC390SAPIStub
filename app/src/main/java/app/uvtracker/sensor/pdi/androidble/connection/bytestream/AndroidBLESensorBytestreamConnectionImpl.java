@@ -565,7 +565,7 @@ class FlowControlledBuffer {
         int delay = 0;
         if(this.config.speedLimit != 0)
             delay = Math.max(bytesToWrite * 1000 / this.config.speedLimit, this.config.minDelay);
-        Log.d(TAG, String.format("- Executor decided to write %1$d out of %2$d bytes and impose a %3$dms delay.", bytesToWrite, bytesAtBuffer, delay));
+        Log.d(TAG, String.format("- Executor decided to write %1$d out of %2$d bytes and imposed a %3$dms delay.", bytesToWrite, bytesAtBuffer, delay));
         this.dataSink.accept(buffer);
         synchronized(this) {
             if(this.stream.isEmpty()) {

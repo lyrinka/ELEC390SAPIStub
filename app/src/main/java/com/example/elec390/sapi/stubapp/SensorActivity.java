@@ -12,10 +12,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Date;
 import java.util.Objects;
 
+// TODO: For testing purposes we'll have to invoke PDIs here. However, application shall normally NEVER invoke PDI classes.
 import app.uvtracker.sensor.pdi.androidble.AndroidBLESensorImpl;
+
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
-import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
 import app.uvtracker.sensor.pii.connection.packet.event.PacketReceivedEvent;
 import app.uvtracker.sensor.pii.connection.packet.event.UnrecognizableMessageReceivedEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
@@ -34,9 +35,6 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     @Nullable
     private ISensorConnection connection;
-
-    @Nullable
-    private ISensorPacketConnection testPacketConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,7 +108,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     private void test() {
         Packet packet = new PacketOutBuzz();
-        Objects.requireNonNull(this.testPacketConnection).write(packet);
+        ((AndroidBLESensorImpl)Objects.requireNonNull(this.sensor)).getFactoryBuilds().packetBased.write(packet);
     }
 
 }
