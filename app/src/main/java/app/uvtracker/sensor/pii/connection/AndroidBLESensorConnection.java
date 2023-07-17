@@ -15,7 +15,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import app.uvtracker.sensor.api.event.EventRegistry;
 
@@ -49,12 +53,27 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
     @Nullable
     private CharacteristicStore endpoints;
 
+    @NonNull
+    private final FlowControlledBuffer writeStream;
+
     public AndroidBLESensorConnection(@NonNull BluetoothDevice device, @NonNull Context context) {
         this.handler = new Handler(Looper.getMainLooper()); // TODO: which thread to use?
         this.context = context;
         this.device = device;
-        this.bleCallback = new BluetoothGattCallbackImpl(this);
         this.internalStage = Stage.DISCONNECTED;
+        this.bleCallback = new BluetoothGattCallbackImpl(this);
+        this.writeStream = new FlowControlledBuffer(
+                this.handler::postDelayed,
+                this::writeCore,
+                new FlowControlledBuffer.Config(
+                        BLEOptions.Device.Serial.Write.Buffer.CAPACITY,
+                        BLEOptions.Device.MTU_REQUIRED - 3,
+                        BLEOptions.Device.Serial.Write.Buffer.SPEED_BPMS,
+                        BLEOptions.Device.Serial.Write.Buffer.STICKY_DLY,
+                        BLEOptions.Device.Serial.Write.Buffer.MIN_DLY
+                )
+        );
+        this.wipeReferences();
     }
 
     private void debug(@NonNull String msg, Object... args) {
@@ -72,6 +91,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
     private void wipeReferences() {
         this.gattObj = null;
         this.endpoints = null;
+        this.writeStream.clear();
     }
 
     private void setStage(@NonNull Stage stage) {
@@ -157,16 +177,21 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.debug("onDeviceConnected() [EV]");
         // TODO: when the device turns on after application-level timeout, the device still gets connected.
         this.gattObj = gatt;
-        this.getGatt().requestMtu(BLEOptions.Device.REQUEST_MTU);
+        this.getGatt().requestMtu(BLEOptions.Device.MTU_REQUIRED);
         this.setStage(Stage.REQUESTING_MTU);
         this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
     }
 
     protected void onDeviceMTURequested(int mtu) {
         this.debug("onDeviceMTURequested() [EV]");
-        if(mtu < BLEOptions.Device.REQUIRE_MTU) {
-            this.debug("- Requested MTU not large enough.");
+        this.debug("- New MTU: $1%d", mtu);
+        if(mtu < BLEOptions.Device.MTU_REQUIRED) {
+            this.debug("- Device MTU not large enough.");
             this.gracefullyClose(true, false);
+        }
+        if(!this.ensureStage(Stage.REQUESTING_MTU)) {
+            this.debug("- Spuriously changed MTU.");
+            return;
         }
         this.getGatt().discoverServices();
         this.setStage(Stage.ENUMERATING);
@@ -246,12 +271,29 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
 
     private void onDataReceived() {
         this.debug("- onDataReceived()");
-        // TODO: data handling
+        byte[] data = Objects.requireNonNull(this.getEndpoints().read.getValue());
+        this.debug("- Received %1$d bytes.", data.length);
+        this.dispatch(new DataReceivedEvent(data));
     }
 
     @Override
     public boolean write(@NonNull byte[] data) {
-        throw new UnsupportedOperationException("stub!");
+        this.debug("write()");
+        if(!this.ensureStage(Stage.ESTABLISHED)) {
+            this.debug("- Connection flow still not done, we are at stage %1$s", this.internalStage);
+            return false;
+        }
+        this.writeStream.write(data);
+        return true;
+    }
+
+    private void writeCore(@NonNull byte[] data) {
+        this.debug("- writeCore()");
+        BluetoothGattCharacteristic write = this.getEndpoints().write;
+        write.setWriteType(BLEOptions.Device.Serial.Write.WRITE_TYPE);
+        write.setValue(data);
+        this.getGatt().writeCharacteristic(write);
+        this.debug("- Written %1$d bytes." + data.length);
     }
 
     protected void onDeviceDisconnected() {
@@ -421,6 +463,118 @@ class BluetoothGattCallbackImpl extends BluetoothGattCallback {
     public void onCharacteristicChanged(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic) {
         super.onCharacteristicChanged(gatt, characteristic);
         this.post(() -> this.connection.onCharacteristicChanged(characteristic));
+    }
+
+}
+
+
+class FlowControlledBuffer {
+
+    @NonNull
+    private static final String TAG = FlowControlledBuffer.class.toString();
+
+    public static class Config {
+
+        public final int capacity;      // Capacity in bytes
+        public final int speedLimit;    // Speed limit in bytes per ms. Set as 0 to disable
+        public final int mtu;           // MTU in bytes
+        public final int stickyDelay;   // Initial sticky delay in ms
+        public final int minDelay;      // Minimum throttling to apply
+
+        public Config(int capacity, int mtu, int speedLimit, int stickyDelay, int minDelay) {
+            this.capacity = capacity;
+            this.speedLimit = speedLimit;
+            this.mtu = mtu;
+            this.stickyDelay = stickyDelay;
+            this.minDelay = minDelay;
+        }
+
+    }
+
+    @NonNull
+    private final BiConsumer<Runnable, Integer> scheduler;
+
+    @NonNull
+    private final Consumer<byte[]> dataSink;
+
+    @NonNull
+    private final Config config;
+
+    @NonNull
+    private final ArrayBlockingQueue<Byte> stream;
+
+    private boolean isActive;
+
+    public FlowControlledBuffer(@NonNull BiConsumer<Runnable, Integer> scheduler, @NonNull Consumer<byte[]> dataSink, @NonNull Config config) {
+        this.scheduler = scheduler;
+        this.dataSink = dataSink;
+        this.config = config;
+        this.stream = new ArrayBlockingQueue<>(config.capacity);
+        this.isActive = false;
+    }
+
+    public void write(@NonNull byte[] data) {
+        Log.d(TAG, "write(" + data.length + " bytes)");
+        int counter = 0;
+        try {
+            for (byte ch : data) {
+                this.stream.add(ch);
+                counter++;
+            }
+            Log.d(TAG, "- Processed " + data.length + "bytes.");
+        }
+        catch(IllegalStateException ex) {
+            Log.w(TAG, "- Flow control buffer overflowed! Processed only " + counter + " of " + data.length + "bytes.");
+        }
+        this.triggerExecutor();
+    }
+
+    private void triggerExecutor() {
+        synchronized(this) {
+            if(this.isActive) return;
+            this.isActive = true;
+        }
+        Log.d(TAG, "- Starting executor...");
+        this.scheduler.accept(this::execute, this.config.stickyDelay);
+    }
+
+    private void execute() {
+        Log.d(TAG, "execute()");
+        int bytesAtBuffer;
+        synchronized(this) {
+            bytesAtBuffer = this.stream.size();
+            if(bytesAtBuffer == 0) {
+                this.isActive = false;
+                return;
+            }
+        }
+        int bytesToWrite = Math.min(bytesAtBuffer, this.config.mtu);
+        byte[] buffer = new byte[bytesToWrite];
+        for (int i = 0; i < bytesToWrite; i++) {
+            Byte got = this.stream.poll();
+            if(got == null) {
+                buffer = Arrays.copyOf(buffer, i);
+                break;
+            }
+            buffer[i] = got;
+        }
+        int delay = 0;
+        if(this.config.speedLimit != 0)
+            delay = Math.min(bytesToWrite / this.config.speedLimit, this.config.minDelay);
+        Log.d(TAG, String.format("- Executor decided to write %1$d out of %2$d bytes and impose a %3$dms delay.", bytesToWrite, bytesAtBuffer, delay));
+        this.dataSink.accept(buffer);
+        synchronized(this) {
+            if(this.stream.isEmpty()) {
+                this.isActive = false;
+                return;
+            }
+        }
+        Log.d(TAG, "- Executor scheduled next execution.");
+        this.scheduler.accept(this::execute, delay);
+    }
+
+    public void clear() {
+        this.stream.clear();
     }
 
 }

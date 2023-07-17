@@ -18,8 +18,7 @@ public class BLEOptions {
 
     @SuppressWarnings("CanBeFinal")
     public static class Device {
-        public static int REQUEST_MTU = 128;
-        public static int REQUIRE_MTU = 128;
+        public static int MTU_REQUIRED = 128;
         public static UUID SERVICE = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
         public static class Serial {
             @SuppressWarnings("CanBeFinal")
@@ -34,6 +33,13 @@ public class BLEOptions {
                 public static UUID ENDPOINT = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
                 public static int PROPERTY = BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE;
                 public static int WRITE_TYPE = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE;
+                @SuppressWarnings("CanBeFinal")
+                public static class Buffer {
+                    public static int CAPACITY = 2048;
+                    public static int SPEED_BPMS = 8; // Speed in bytes per ms, approx. 7.8kBps
+                    public static int STICKY_DLY = 5;
+                    public static int MIN_DLY = 1;
+                }
             }
         }
     }
