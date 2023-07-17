@@ -57,7 +57,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.internalStage = Stage.DISCONNECTED;
     }
 
-    private void debug(String msg, Object... args) {
+    private void debug(@NonNull String msg, Object... args) {
         if(BLEOptions.TRACE_ENABLED) Log.d(TAG, String.format(msg, args));
     }
 
@@ -102,6 +102,10 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
             this.delayedTask.cancel();
     }
 
+    private void dispatch(ConnectionStageChangeEvent.Stage stage) {
+        this.dispatch(new ConnectionStageChangeEvent(stage, this.internalStage.getPercentage()));
+    }
+
     @Override
     public void reset() {
         this.debug("reset()");
@@ -113,7 +117,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         }
         this.wipeReferences();
         this.setStage(Stage.CRASHED);
-        // TODO: event
+        this.dispatch(ConnectionStageChangeEvent.Stage.FAILED_RETRY);
     }
 
     @Override
@@ -126,6 +130,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.device.connectGatt(this.context, false, this.bleCallback, BluetoothDevice.TRANSPORT_LE);
         this.setStage(Stage.CONNECTING);
         this.setDelayedTask(this::reset, BLEOptions.Connection.CONNECTION_TIMEOUT);
+        this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
         return true;
     }
 
@@ -139,6 +144,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.getGatt().disconnect();
         this.setStage(Stage.DISCONNECTING);
         this.setDelayedTask(this::reset, BLEOptions.Connection.DISCONNECTION_TIMEOUT);
+        this.dispatch(ConnectionStageChangeEvent.Stage.DISCONNECTING);
         return true;
     }
 
@@ -147,6 +153,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.gattObj = gatt;
         this.getGatt().requestMtu(BLEOptions.Device.REQUEST_MTU);
         this.setStage(Stage.REQUESTING_MTU);
+        this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
     }
 
     protected void onDeviceMTURequested(int mtu) {
@@ -157,6 +164,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         }
         this.getGatt().discoverServices();
         this.setStage(Stage.ENUMERATING);
+        this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
     }
 
     protected void onDeviceEnumerated() {
@@ -171,6 +179,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
             return;
         }
         this.setStage(Stage.SUBSCRIBING);
+        this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
     }
 
     private void obtainEndpoints() throws UnsupportedOperationException {
@@ -209,12 +218,13 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.debug("- onNotificationSubscribed()");
         this.setDelayedTask(this::onConnectionStabilized, BLEOptions.Connection.CONNECTION_GRACE_PERIOD);
         this.setStage(Stage.CONNECTION_GRACE_PERIOD);
+        this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
     }
 
     private void onConnectionStabilized() {
-        this.debug("onConnectionStablized() [EV]");
+        this.debug("onConnectionStabilized() [EV]");
         this.setStage(Stage.ESTABLISHED);
-        // TODO: event dispatching
+        this.dispatch(ConnectionStageChangeEvent.Stage.ESTABLISHED);
     }
 
     protected void onCharacteristicChanged(BluetoothGattCharacteristic characteristic) {
@@ -254,22 +264,34 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.getGatt().close();
         this.setStage(failed ? Stage.CRASHED : Stage.DISCONNECTED);
         this.wipeReferences();
-        // TODO: event emitting
+        this.dispatch(!failed ? ConnectionStageChangeEvent.Stage.DISCONNECTED : retryAdvised ? ConnectionStageChangeEvent.Stage.FAILED_RETRY : ConnectionStageChangeEvent.Stage.FAILED_NO_RETRY);
     }
 
 }
 
 
 enum Stage {
-    DISCONNECTED,
-    CONNECTING,
-    REQUESTING_MTU,
-    ENUMERATING,
-    SUBSCRIBING,
-    CONNECTION_GRACE_PERIOD,
-    ESTABLISHED,
-    DISCONNECTING,
-    CRASHED,
+    DISCONNECTED(100),
+    CONNECTING(0),
+    REQUESTING_MTU(30),
+    ENUMERATING(50),
+    SUBSCRIBING(70),
+    CONNECTION_GRACE_PERIOD(90),
+    ESTABLISHED(100),
+    DISCONNECTING(0),
+    CRASHED(100),
+    ;
+
+    private final int percentage;
+
+    Stage(int percentage) {
+        this.percentage = percentage;
+    }
+
+    public int getPercentage() {
+        return this.percentage;
+    }
+
 }
 
 
