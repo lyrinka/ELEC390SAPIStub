@@ -13,11 +13,17 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 
+import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
+import app.uvtracker.sensor.pii.connection.packet.PacketReceivedEvent;
+import app.uvtracker.sensor.pii.connection.packet.SensorPacketConnection;
+import app.uvtracker.sensor.pii.connection.packet.UnrecognizableMessageReceivedEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pdi.android.connection.bytestream.AndroidBLESensorBytestreamConnection;
 import app.uvtracker.sensor.pii.connection.shared.ConnectionStateChangeEvent;
 import app.uvtracker.sensor.pii.connection.bytestream.ISensorBytestreamConnection;
+import app.uvtracker.sensor.protocol.packet.Packet;
+import app.uvtracker.sensor.protocol.packet.PacketOutBuzz;
 
 public class SensorActivity extends AppCompatActivity implements IEventListener {
 
@@ -25,7 +31,10 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     private static final String TAG = SensorActivity.class.getSimpleName();
 
     @Nullable
-    private ISensorBytestreamConnection sensor;
+    private ISensorBytestreamConnection sensor1;
+
+    @Nullable
+    private ISensorPacketConnection sensor2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,31 +42,32 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         setContentView(R.layout.activity_sensor);
 
         if(IntentDataHelper.sensor == null) this.finish();
-        this.sensor = new AndroidBLESensorBytestreamConnection(IntentDataHelper.sensor, this);
+        this.sensor1 = new AndroidBLESensorBytestreamConnection(IntentDataHelper.sensor, this);
+        this.sensor2 = new SensorPacketConnection(this.sensor1);
 
         TextView text = this.findViewById(R.id.sensor_txt_disp);
 //      text.setText(this.sensor.getName());
 
-        this.sensor.registerListener(this);
+        this.sensor2.registerListener(this);
 
 
         Button btnConnect = this.findViewById(R.id.sensor_btn_con);
         Button btnDisconnect = this.findViewById(R.id.sensor_btn_dis);
         Button btnReset = this.findViewById(R.id.sensor_btn_rst);
         btnConnect.setOnClickListener(v -> {
-            if(this.sensor.connect()) {
+            if(this.sensor2.connect()) {
                 Log.d(TAG, "Button: Initiated connection flow.");
             }
             else Log.d(TAG, "Button: Connection flow initiation request ignored.");
         });
         btnDisconnect.setOnClickListener(v -> {
-            if(this.sensor.disconnect()) {
+            if(this.sensor2.disconnect()) {
                 Log.d(TAG, "Button: Initiated disconnection.");
             }
             else Log.d(TAG, "Button: Disconnection initiation request ignored.");
         });
         btnReset.setOnClickListener(v -> {
-            this.sensor.reset();
+            this.sensor2.reset();
             Log.d(TAG, "Button: Connection flow force reset performed.");
         });
 
@@ -70,6 +80,18 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         String status = event.getStage() + " " + event.getPercentage() + "%";
         Log.d(TAG, ">>> Callback: " + status);
         this.updateStatus(">>> " + status);
+    }
+
+    @EventHandler
+    public void onPacketReceived(PacketReceivedEvent event) {
+        Log.d(TAG, "Received packet " + event.getPacket());
+        this.updateStatus(event.getPacket().toString());
+    }
+
+    @EventHandler
+    public void onGarbageReceived(UnrecognizableMessageReceivedEvent event) {
+        Log.d(TAG, "Received garbage " + event.getMessageAsUnicode());
+        this.updateStatus(event.getMessageAsUnicode());
     }
 
     private void updateStatus(String msg) {
@@ -85,9 +107,8 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     }
 
     private void test() {
-        byte[] buffer = new byte[1000];
-        Arrays.fill(buffer, (byte)'$');
-        Objects.requireNonNull(this.sensor).write(buffer);
+        Packet packet = new PacketOutBuzz();
+        Objects.requireNonNull(this.sensor2).write(packet);
     }
 
 }

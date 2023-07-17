@@ -525,10 +525,10 @@ class FlowControlledBuffer {
                 this.stream.add(ch);
                 counter++;
             }
-            Log.d(TAG, "- Processed " + data.length + "bytes.");
+            Log.d(TAG, "- Processed " + data.length + " bytes.");
         }
         catch(IllegalStateException ex) {
-            Log.w(TAG, "- Flow control buffer overflowed! Processed only " + counter + " of " + data.length + "bytes.");
+            Log.w(TAG, "- Flow control buffer overflowed! Processed only " + counter + " of " + data.length + " bytes.");
         }
         this.triggerExecutor();
     }
