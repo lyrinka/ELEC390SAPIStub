@@ -34,7 +34,7 @@ public interface PacketType {
         // System
         KEEP_ALIVE      (0x00, PacketInKeepAlive.class),
         // Data transfer
-        NewSample       (0x20, PacketInNewSample.class),
+        NEW_SAMPLE(0x20, PacketInNewSample.class),
         // HMI
         BUTTON_INTERACT (0x40, PacketInButtonInteract.class),
 
