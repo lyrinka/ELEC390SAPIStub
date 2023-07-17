@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.api.exception;
+package app.uvtracker.sensor.pii.scanner.exception;
 
 public class TransceiverException extends Exception {
 

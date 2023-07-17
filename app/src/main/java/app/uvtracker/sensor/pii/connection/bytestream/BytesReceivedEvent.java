@@ -1,13 +1,13 @@
-package app.uvtracker.sensor.pii.connection;
+package app.uvtracker.sensor.pii.connection.bytestream;
 
 import androidx.annotation.NonNull;
 
-public class DataReceivedEvent {
+public class BytesReceivedEvent {
 
     @NonNull
     private final byte[] data;
 
-    public DataReceivedEvent(@NonNull byte[] data) {
+    public BytesReceivedEvent(@NonNull byte[] data) {
         this.data = data;
     }
 

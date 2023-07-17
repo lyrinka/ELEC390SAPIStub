@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.api.event;
+package app.uvtracker.sensor.pii.event;
 
 import android.util.Log;
 

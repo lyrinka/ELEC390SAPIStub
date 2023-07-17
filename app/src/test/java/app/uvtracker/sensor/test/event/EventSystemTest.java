@@ -5,9 +5,9 @@ import org.junit.Test;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import app.uvtracker.sensor.api.event.EventHandler;
-import app.uvtracker.sensor.api.event.EventRegistry;
-import app.uvtracker.sensor.api.event.IEventListener;
+import app.uvtracker.sensor.pii.event.EventHandler;
+import app.uvtracker.sensor.pii.event.EventRegistry;
+import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.test.event.objects.*;
 
 public class EventSystemTest implements IEventListener {

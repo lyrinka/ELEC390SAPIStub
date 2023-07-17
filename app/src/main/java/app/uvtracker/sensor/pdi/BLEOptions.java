@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pii.connection;
+package app.uvtracker.sensor.pdi;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;

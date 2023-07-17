@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import app.uvtracker.sensor.api.event.EventRegistry;
-import app.uvtracker.sensor.api.exception.TransceiverException;
-import app.uvtracker.sensor.api.exception.TransceiverNoPermException;
-import app.uvtracker.sensor.api.exception.TransceiverOffException;
-import app.uvtracker.sensor.api.exception.TransceiverUnsupportedException;
-import app.uvtracker.sensor.pii.connection.BLEOptions;
+import app.uvtracker.sensor.pii.event.EventRegistry;
+import app.uvtracker.sensor.pii.scanner.exception.TransceiverException;
+import app.uvtracker.sensor.pii.scanner.exception.TransceiverNoPermException;
+import app.uvtracker.sensor.pii.scanner.exception.TransceiverOffException;
+import app.uvtracker.sensor.pii.scanner.exception.TransceiverUnsupportedException;
+import app.uvtracker.sensor.pdi.BLEOptions;
 
 public class AndroidBLEScanner extends EventRegistry {
 

@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import app.uvtracker.sensor.api.event.EventHandler;
-import app.uvtracker.sensor.api.event.IEventListener;
-import app.uvtracker.sensor.api.exception.TransceiverException;
+import app.uvtracker.sensor.pii.event.EventHandler;
+import app.uvtracker.sensor.pii.event.IEventListener;
+import app.uvtracker.sensor.pii.scanner.exception.TransceiverException;
 import app.uvtracker.sensor.pdi.android.scanner.AndroidBLEScanner;
 import app.uvtracker.sensor.pdi.android.scanner.SensorScannedEvent;
 

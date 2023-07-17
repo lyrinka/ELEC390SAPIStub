@@ -1,4 +1,4 @@
-package app.uvtracker.sensor.pii.connection;
+package app.uvtracker.sensor.pdi.android.connection.bytestream;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
@@ -21,13 +21,17 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import app.uvtracker.sensor.api.event.EventRegistry;
+import app.uvtracker.sensor.pii.event.EventRegistry;
+import app.uvtracker.sensor.pdi.BLEOptions;
+import app.uvtracker.sensor.pii.connection.bytestream.BytesReceivedEvent;
+import app.uvtracker.sensor.pii.connection.shared.ConnectionStateChangeEvent;
+import app.uvtracker.sensor.pii.connection.bytestream.ISensorBytestreamConnection;
 
 @SuppressLint("MissingPermission")
-public class AndroidBLESensorConnection extends EventRegistry implements ISensorConnection {
+public class AndroidBLESensorBytestreamConnection extends EventRegistry implements ISensorBytestreamConnection {
 
     @NonNull
-    private static final String TAG = AndroidBLESensorConnection.class.getSimpleName();
+    private static final String TAG = AndroidBLESensorBytestreamConnection.class.getSimpleName();
 
     @NonNull
     private final Handler handler;
@@ -56,7 +60,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
     @NonNull
     private final FlowControlledBuffer writeStream;
 
-    public AndroidBLESensorConnection(@NonNull BluetoothDevice device, @NonNull Context context) {
+    public AndroidBLESensorBytestreamConnection(@NonNull BluetoothDevice device, @NonNull Context context) {
         this.handler = new Handler(Looper.getMainLooper()); // TODO: which thread to use?
         this.context = context;
         this.device = device;
@@ -122,8 +126,8 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
             this.delayedTask.cancel();
     }
 
-    private void dispatch(ConnectionStageChangeEvent.Stage stage) {
-        this.dispatch(new ConnectionStageChangeEvent(stage, this.internalStage.getPercentage()));
+    private void dispatch(ConnectionStateChangeEvent.State state) {
+        this.dispatch(new ConnectionStateChangeEvent(state, this.internalStage.getPercentage()));
     }
 
     @Override
@@ -137,7 +141,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         }
         this.wipeReferences();
         this.setStage(Stage.CRASHED);
-        this.dispatch(ConnectionStageChangeEvent.Stage.FAILED_RETRY);
+        this.dispatch(ConnectionStateChangeEvent.State.FAILED_RETRY);
     }
 
     @Override
@@ -150,7 +154,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.device.connectGatt(this.context, false, this.bleCallback, BluetoothDevice.TRANSPORT_LE);
         this.setStage(Stage.CONNECTING);
         this.setDelayedTask(this::reset, BLEOptions.Connection.CONNECTION_TIMEOUT);
-        this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
+        this.dispatch(ConnectionStateChangeEvent.State.CONNECTING);
         return true;
     }
 
@@ -165,7 +169,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
             this.getGatt().disconnect();
             this.setStage(Stage.DISCONNECTING);
             this.setDelayedTask(this::reset, BLEOptions.Connection.DISCONNECTION_TIMEOUT);
-            this.dispatch(ConnectionStageChangeEvent.Stage.DISCONNECTING);
+            this.dispatch(ConnectionStateChangeEvent.State.DISCONNECTING);
         }
         else {
             this.gracefullyClose(true, true);
@@ -179,7 +183,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.gattObj = gatt;
         this.getGatt().requestMtu(BLEOptions.Device.MTU_REQUIRED);
         this.setStage(Stage.REQUESTING_MTU);
-        this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
+        this.dispatch(ConnectionStateChangeEvent.State.CONNECTING);
     }
 
     protected void onDeviceMTURequested(int mtu) {
@@ -195,7 +199,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         }
         this.getGatt().discoverServices();
         this.setStage(Stage.ENUMERATING);
-        this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
+        this.dispatch(ConnectionStateChangeEvent.State.CONNECTING);
     }
 
     protected void onDeviceEnumerated() {
@@ -210,7 +214,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
             return;
         }
         this.setStage(Stage.SUBSCRIBING);
-        this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
+        this.dispatch(ConnectionStateChangeEvent.State.CONNECTING);
     }
 
     private void obtainEndpoints() throws UnsupportedOperationException {
@@ -249,13 +253,13 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.debug("- onNotificationSubscribed()");
         this.setDelayedTask(this::onConnectionStabilized, BLEOptions.Connection.CONNECTION_GRACE_PERIOD);
         this.setStage(Stage.CONNECTION_GRACE_PERIOD);
-        this.dispatch(ConnectionStageChangeEvent.Stage.CONNECTING);
+        this.dispatch(ConnectionStateChangeEvent.State.CONNECTING);
     }
 
     private void onConnectionStabilized() {
         this.debug("onConnectionStabilized() [EV]");
         this.setStage(Stage.ESTABLISHED);
-        this.dispatch(ConnectionStageChangeEvent.Stage.ESTABLISHED);
+        this.dispatch(ConnectionStateChangeEvent.State.ESTABLISHED);
     }
 
     protected void onCharacteristicChanged(BluetoothGattCharacteristic characteristic) {
@@ -273,7 +277,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         this.debug("- onDataReceived()");
         byte[] data = Objects.requireNonNull(this.getEndpoints().read.getValue());
         this.debug("- Received %1$d bytes.", data.length);
-        this.dispatch(new DataReceivedEvent(data));
+        this.dispatch(new BytesReceivedEvent(data));
     }
 
     @Override
@@ -319,7 +323,7 @@ public class AndroidBLESensorConnection extends EventRegistry implements ISensor
         }
         this.setStage(failed ? Stage.CRASHED : Stage.DISCONNECTED);
         this.wipeReferences();
-        this.dispatch(!failed ? ConnectionStageChangeEvent.Stage.DISCONNECTED : retryAdvised ? ConnectionStageChangeEvent.Stage.FAILED_RETRY : ConnectionStageChangeEvent.Stage.FAILED_NO_RETRY);
+        this.dispatch(!failed ? ConnectionStateChangeEvent.State.DISCONNECTED : retryAdvised ? ConnectionStateChangeEvent.State.FAILED_RETRY : ConnectionStateChangeEvent.State.FAILED_NO_RETRY);
     }
 
 }
@@ -398,9 +402,9 @@ class DelayedTask implements Runnable {
 class BluetoothGattCallbackImpl extends BluetoothGattCallback {
 
     @NonNull
-    private final AndroidBLESensorConnection connection;
+    private final AndroidBLESensorBytestreamConnection connection;
 
-    public BluetoothGattCallbackImpl(@NonNull AndroidBLESensorConnection connection) {
+    public BluetoothGattCallbackImpl(@NonNull AndroidBLESensorBytestreamConnection connection) {
         this.connection = connection;
     }
 

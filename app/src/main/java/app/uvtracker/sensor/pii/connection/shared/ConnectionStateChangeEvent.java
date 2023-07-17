@@ -1,10 +1,10 @@
-package app.uvtracker.sensor.pii.connection;
+package app.uvtracker.sensor.pii.connection.shared;
 
 import androidx.annotation.NonNull;
 
-public class ConnectionStageChangeEvent {
+public class ConnectionStateChangeEvent {
 
-    public enum Stage {
+    public enum State {
         CONNECTING,
         ESTABLISHED,
         DISCONNECTING,
@@ -14,18 +14,18 @@ public class ConnectionStageChangeEvent {
     }
 
     @NonNull
-    private final Stage stage;
+    private final State state;
 
     private final int percentage;
 
-    public ConnectionStageChangeEvent(@NonNull Stage stage, int estimatedPercentage) {
-        this.stage = stage;
+    public ConnectionStateChangeEvent(@NonNull State state, int estimatedPercentage) {
+        this.state = state;
         this.percentage = estimatedPercentage;
     }
 
     @NonNull
-    public Stage getStage() {
-        return this.stage;
+    public State getStage() {
+        return this.state;
     }
 
     public int getPercentage() {

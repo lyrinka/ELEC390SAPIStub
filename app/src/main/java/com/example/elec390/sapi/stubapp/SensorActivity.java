@@ -9,14 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
 
-import app.uvtracker.sensor.api.event.EventHandler;
-import app.uvtracker.sensor.api.event.IEventListener;
-import app.uvtracker.sensor.pii.connection.AndroidBLESensorConnection;
-import app.uvtracker.sensor.pii.connection.ConnectionStageChangeEvent;
-import app.uvtracker.sensor.pii.connection.ISensorConnection;
+import app.uvtracker.sensor.pii.event.EventHandler;
+import app.uvtracker.sensor.pii.event.IEventListener;
+import app.uvtracker.sensor.pdi.android.connection.bytestream.AndroidBLESensorBytestreamConnection;
+import app.uvtracker.sensor.pii.connection.shared.ConnectionStateChangeEvent;
+import app.uvtracker.sensor.pii.connection.bytestream.ISensorBytestreamConnection;
 
 public class SensorActivity extends AppCompatActivity implements IEventListener {
 
@@ -24,7 +25,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     private static final String TAG = SensorActivity.class.getSimpleName();
 
     @Nullable
-    private ISensorConnection sensor;
+    private ISensorBytestreamConnection sensor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +33,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         setContentView(R.layout.activity_sensor);
 
         if(IntentDataHelper.sensor == null) this.finish();
-        this.sensor = new AndroidBLESensorConnection(IntentDataHelper.sensor, this);
+        this.sensor = new AndroidBLESensorBytestreamConnection(IntentDataHelper.sensor, this);
 
         TextView text = this.findViewById(R.id.sensor_txt_disp);
 //      text.setText(this.sensor.getName());
@@ -65,7 +66,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     }
 
     @EventHandler
-    public void onConnectionStatusChange(ConnectionStageChangeEvent event) {
+    public void onConnectionStatusChange(ConnectionStateChangeEvent event) {
         String status = event.getStage() + " " + event.getPercentage() + "%";
         Log.d(TAG, ">>> Callback: " + status);
         this.updateStatus(">>> " + status);
@@ -85,8 +86,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     private void test() {
         byte[] buffer = new byte[1000];
-        for(int i = 0; i < buffer.length; i++)
-            buffer[i] = '$';
+        Arrays.fill(buffer, (byte)'$');
         Objects.requireNonNull(this.sensor).write(buffer);
     }
 
