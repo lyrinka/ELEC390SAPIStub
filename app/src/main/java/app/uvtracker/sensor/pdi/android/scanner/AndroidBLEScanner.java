@@ -2,6 +2,7 @@ package app.uvtracker.sensor.pdi.android.scanner;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
@@ -16,18 +17,17 @@ import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 
-import app.uvtracker.sensor.api.scanner.IScanner;
-import app.uvtracker.sensor.api.exception.TransceiverException;
-import app.uvtracker.sensor.api.exception.TransceiverNoPermException;
-import app.uvtracker.sensor.api.exception.TransceiverOffException;
-import app.uvtracker.sensor.api.exception.TransceiverUnsupportedException;
-import app.uvtracker.sensor.api.scanner.IScannerCallback;
-import app.uvtracker.sensor.pdi.BLEDeviceDesc;
+import app.uvtracker.sensor.pii.event.EventRegistry;
+import app.uvtracker.sensor.pii.scanner.exception.TransceiverException;
+import app.uvtracker.sensor.pii.scanner.exception.TransceiverNoPermException;
+import app.uvtracker.sensor.pii.scanner.exception.TransceiverOffException;
+import app.uvtracker.sensor.pii.scanner.exception.TransceiverUnsupportedException;
+import app.uvtracker.sensor.pdi.BLEOptions;
 
-public class AndroidBLEScanner implements IScanner {
+public class AndroidBLEScanner extends EventRegistry {
 
     @NonNull
     private final Context context;
@@ -58,27 +58,25 @@ public class AndroidBLEScanner implements IScanner {
     }
 
     @SuppressLint("MissingPermission")
-    @Override
-    public void startScanning(@NonNull IScannerCallback consumer) throws TransceiverException {
+    public void startScanning() throws TransceiverException {
         if (this.isScanning) return;
         if(this.permissionChecker != null && !this.permissionChecker.getAsBoolean()) throw new TransceiverNoPermException();
 
         List<ScanFilter> filters = new ArrayList<>();
         ScanFilter.Builder filterBuilder = new ScanFilter.Builder();
-        if(BLEDeviceDesc.RESTRICTED)
-            filterBuilder.setServiceUuid(ParcelUuid.fromString(BLEDeviceDesc.SERVICE_UUID));
+        if(BLEOptions.Scanner.RESTRICTED)
+            filterBuilder.setServiceUuid(new ParcelUuid(BLEOptions.Scanner.FILTER_UUID));
         filters.add(filterBuilder.build());
         ScanSettings settings = new ScanSettings.Builder()
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                 .build();
-        this.callback = new InternalScanCallback(consumer, this.context);
+        this.callback = new InternalScanCallback(this::dispatch, this.context);
 
         this.isScanning = true;
         this.bluetoothAdapter.getBluetoothLeScanner().startScan(filters, settings, this.callback);
     }
 
     @SuppressLint("MissingPermission")
-    @Override
     public void stopScanning() throws TransceiverException {
         if (!this.isScanning) return;
         if(this.permissionChecker != null && !this.permissionChecker.getAsBoolean()) throw new TransceiverNoPermException();
@@ -86,7 +84,6 @@ public class AndroidBLEScanner implements IScanner {
         this.isScanning = false;
     }
 
-    @Override
     public boolean isScanning() {
         return this.isScanning;
     }
@@ -96,15 +93,15 @@ public class AndroidBLEScanner implements IScanner {
 class InternalScanCallback extends ScanCallback {
 
     @NonNull
-    private final HashMap<String, AndroidBLEScannedSensor> map;
+    private final HashMap<String, BluetoothDevice> map;
 
     @NonNull
-    private final IScannerCallback callback;
+    private final Consumer<SensorScannedEvent> callback;
 
     @NonNull
     private final Context context;
 
-    public InternalScanCallback(@NonNull IScannerCallback callback, @NonNull Context context) {
+    public InternalScanCallback(@NonNull Consumer<SensorScannedEvent> callback, @NonNull Context context) {
         this.map = new HashMap<>();
         this.callback = callback;
         this.context = context;
@@ -113,16 +110,14 @@ class InternalScanCallback extends ScanCallback {
     @Override
     public void onScanResult(int callbackType, ScanResult result) {
         super.onScanResult(callbackType, result);
-        AndroidBLEScannedSensor scannedSensor = new AndroidBLEScannedSensor(result, this.context);
-        String address = scannedSensor.getSensor().getAddress();
+
+        BluetoothDevice device = result.getDevice();
+        String address = device.getAddress();
 
         boolean firstTime = !this.map.containsKey(address);
-        if(firstTime)
-            this.map.put(address, scannedSensor);
-        else
-            Objects.requireNonNull(this.map.get(address)).updateFromResult(result);
+        if(firstTime) this.map.put(address, device);
 
-        this.callback.onScanUpdate(scannedSensor, firstTime, this.map.values());
+        this.callback.accept(new SensorScannedEvent(device, firstTime, this.map.values()));
     }
 
 }

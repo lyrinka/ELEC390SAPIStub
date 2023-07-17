@@ -7,9 +7,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,31 +22,28 @@ import com.example.elec390.sapi.stubapp.util.BLEPermissions;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import app.uvtracker.sensor.api.ISensor;
-import app.uvtracker.sensor.api.scanner.IScanner;
-import app.uvtracker.sensor.api.SensorAPI;
-import app.uvtracker.sensor.api.exception.TransceiverException;
-import app.uvtracker.sensor.api.scanner.IScannedSensor;
-import app.uvtracker.sensor.api.scanner.IScannerCallback;
+import app.uvtracker.sensor.pii.event.EventHandler;
+import app.uvtracker.sensor.pii.event.IEventListener;
+import app.uvtracker.sensor.pii.scanner.exception.TransceiverException;
+import app.uvtracker.sensor.pdi.android.scanner.AndroidBLEScanner;
+import app.uvtracker.sensor.pdi.android.scanner.SensorScannedEvent;
 
-public class MainActivity extends AppCompatActivity implements IScannerCallback, Runnable {
+public class MainActivity extends AppCompatActivity implements IEventListener, Runnable {
 
     private static final int REFRESH_PERIOD = 500;
     private static final int SCAN_STOP_PERIODS = 60;
 
-    private IScanner scanner;
+    private AndroidBLEScanner scanner;
 
     private RecyclerViewAdapter listAdapter;
 
-    private Collection<? extends IScannedSensor> datastore;
+    private Collection<BluetoothDevice> datastore;
 
-    private final Handler refreshHandler = new Handler();
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
     private int refreshCounter = 0;
 
     @SuppressLint("MissingPermission")
@@ -55,7 +54,8 @@ public class MainActivity extends AppCompatActivity implements IScannerCallback,
 
         if(this.scanner == null) {
             try {
-                this.scanner = SensorAPI.getInstance().getAndroidBLEScanner(this);
+                this.scanner = new AndroidBLEScanner(this);
+                this.scanner.registerListener(this);
             } catch (TransceiverException e) {
                 throw new RuntimeException(e);
             }
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements IScannerCallback,
         this.datastore = null;
         this.refreshCounter = 0;
         try {
-            this.scanner.startScanning(this);
+            this.scanner.startScanning();
         } catch (TransceiverException e) {
             throw new RuntimeException(e);
         }
@@ -103,9 +103,9 @@ public class MainActivity extends AppCompatActivity implements IScannerCallback,
         }
     }
 
-    @Override
-    public void onScanUpdate(@NonNull IScannedSensor sensor, boolean isFirstTime, @NonNull Collection<? extends IScannedSensor> sensors) {
-        this.datastore = sensors;
+    @EventHandler
+    public void onScanUpdate(SensorScannedEvent event) {
+        this.datastore = event.getSensors();
     }
 
     @Override
@@ -135,9 +135,9 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         private ViewContent content;
 
         @NonNull
-        private final Consumer<ISensor> callback;
+        private final Consumer<BluetoothDevice> callback;
 
-        public ViewHolder(@NonNull View itemView, @NonNull Consumer<ISensor> callback) {
+        public ViewHolder(@NonNull View itemView, @NonNull Consumer<BluetoothDevice> callback) {
             super(itemView);
             this.itemView = itemView;
             this.callback = callback;
@@ -160,7 +160,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private static class ViewContent {
 
         @NonNull
-        private final ISensor sensor;
+        private final BluetoothDevice sensor;
 
         @NonNull
         private final String address;
@@ -172,7 +172,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         private final boolean active;
 
-        public ViewContent(@NonNull ISensor sensor, @NonNull String address, @Nullable String name, int rssi, boolean active) {
+        public ViewContent(@NonNull BluetoothDevice sensor, @NonNull String address, @Nullable String name, int rssi, boolean active) {
             this.sensor = sensor;
             this.address = address;
             this.name = name;
@@ -194,7 +194,7 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         }
 
         @NonNull
-        public ISensor getSensor() {
+        public BluetoothDevice getSensor() {
             return this.sensor;
         }
 
@@ -204,15 +204,16 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private List<ViewContent> datastore;
 
     @NonNull
-    private final Consumer<ISensor> callback;
+    private final Consumer<BluetoothDevice> callback;
 
-    public RecyclerViewAdapter(@NonNull Consumer<ISensor> clickCallback) {
+    public RecyclerViewAdapter(@NonNull Consumer<BluetoothDevice> clickCallback) {
         this.datastore = new ArrayList<>();
         this.callback = clickCallback;
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    public void updateDatastore(Collection<? extends IScannedSensor> source) {
+    @SuppressLint({"NotifyDataSetChanged", "MissingPermission"})
+    public void updateDatastore(Collection<BluetoothDevice> source) {
+        /*
         long currentTime = new Date().getTime();
         this.datastore = source.stream()
                 .filter(sensor -> currentTime - sensor.lastSeenAt().getTime() < REMOVAL_MS)
@@ -222,6 +223,15 @@ class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                         sensor.getSensor().getName(), sensor.getRssi(),
                         currentTime - sensor.lastSeenAt().getTime() < INACTIVE_MS))
                 .sorted(Comparator.comparingInt(o -> -o.rssi))
+                .collect(Collectors.toList());
+         */
+        this.datastore = source.stream()
+                .map(device -> new ViewContent(
+                        device,
+                        device.getAddress(),
+                        device.getName(),
+                        0,
+                        true))
                 .collect(Collectors.toList());
         this.notifyDataSetChanged();
     }

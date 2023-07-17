@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 
 import app.uvtracker.sensor.protocol.codec.IPacketCodec;
 import app.uvtracker.sensor.protocol.codec.exception.CodecException;
@@ -79,7 +80,7 @@ public class PacketCodecBase93NoAESImpl implements IPacketCodec {
         }
         catch (InvocationTargetException e) {
             Log.d(TAG, "Exception in down-construction process. Is the packet corrupted?");
-            Log.d(TAG, e.getCause().getMessage());
+            Log.d(TAG, Objects.requireNonNull(e.getCause()).getMessage());
             return packetBase;
         }
     }

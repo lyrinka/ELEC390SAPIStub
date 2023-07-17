@@ -1,9 +1,9 @@
 package com.example.elec390.sapi.stubapp;
 
-import app.uvtracker.sensor.api.ISensor;
+import android.bluetooth.BluetoothDevice;
 
 public class IntentDataHelper {
 
-    public static ISensor sensor;
+    public static BluetoothDevice sensor;
 
 }
