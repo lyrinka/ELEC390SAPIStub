@@ -64,7 +64,8 @@ public class AndroidBLESensorImpl implements ISensor {
         this.context = context;
         this.platformDevice = result.getDevice();
         this.address = this.platformDevice.getAddress();
-        this.name = this.platformDevice.getName();
+        String name = this.platformDevice.getName();
+        this.name = name == null ? "" : name;
         this.rssi = result.getRssi();
         this.lastSeenAt = new Date();
     }
