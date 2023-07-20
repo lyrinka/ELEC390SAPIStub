@@ -1,5 +1,7 @@
 package app.uvtracker.sensor.pii.connection.packet;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -20,6 +22,9 @@ import app.uvtracker.sensor.protocol.codec.exception.CodecException;
 import app.uvtracker.sensor.protocol.packet.base.Packet;
 
 public class PIISensorPacketConnectionImpl extends EventRegistry implements ISensorPacketConnection, IEventListener {
+
+    @NonNull
+    private static final String TAG = PIISensorPacketConnectionImpl.class.getSimpleName();
 
     @NonNull
     private final ISensorBytestreamConnection baseConnection;
@@ -67,6 +72,7 @@ public class PIISensorPacketConnectionImpl extends EventRegistry implements ISen
             e.printStackTrace();
             return false;
         }
+        Log.d(TAG, "Encoded " + packet);
         String message = "#" + encoded + "\r\n";
         return this.baseConnection.write(message.getBytes(StandardCharsets.US_ASCII));
     }
@@ -80,6 +86,7 @@ public class PIISensorPacketConnectionImpl extends EventRegistry implements ISen
             if(message.length() > 1 && message.startsWith("#")) {
                 try {
                     Packet decoded = IPacketCodec.get().decode(message.substring(1));
+                    Log.d(TAG, "Decoded " + decoded);
                     this.dispatch(PacketReceivedEvent.fromPacket(decoded));
                     continue;
                 }
@@ -88,6 +95,7 @@ public class PIISensorPacketConnectionImpl extends EventRegistry implements ISen
                     e.printStackTrace();
                 }
             }
+            Log.d(TAG, "Received " + message);
             this.dispatch(new UnrecognizableMessageReceivedEvent(message));
         }
     }

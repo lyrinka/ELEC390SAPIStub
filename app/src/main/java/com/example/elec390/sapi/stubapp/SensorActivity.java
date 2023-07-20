@@ -10,20 +10,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Date;
-import java.util.Objects;
-
-// TODO: For testing purposes we'll have to invoke PDIs here. However, application shall normally NEVER invoke PDI classes.
-import app.uvtracker.sensor.pdi.androidble.AndroidBLESensorImpl;
 
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
-import app.uvtracker.sensor.pii.connection.packet.event.PacketReceivedEvent;
-import app.uvtracker.sensor.pii.connection.packet.event.UnrecognizableMessageReceivedEvent;
+import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
-import app.uvtracker.sensor.protocol.packet.base.Packet;
-import app.uvtracker.sensor.protocol.packet.out.PacketOutBuzz;
 
 public class SensorActivity extends AppCompatActivity implements IEventListener {
 
@@ -48,10 +41,6 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         // We create a connection and register event listeners.
         this.connection = sensor.getConnection();
         this.connection.registerListener(this);
-        // Since the application-level sensor interface is still incomplete,
-        // for testing purposes, we forcefully pull-out internal handle and register packet listeners.
-        // In our end application, only classes within PII (platform independent implementation) shall be used.
-        ((AndroidBLESensorImpl)this.sensor).getFactoryBuilds().packetBased.registerListener(this);
 
         TextView text = this.findViewById(R.id.sensor_txt_disp);
         text.setText(this.sensor.getName());
@@ -96,20 +85,9 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         // - The application should give up and tell the user that the hardware died.
     }
 
-    @EventHandler // Source: ISensorPacketConnection
-    public void onPacketReceived(PacketReceivedEvent event) {
-        // This should not be exposed to Android application developers.
-        // Included here just for testing.
-        Log.d(TAG, "Received packet " + event.getPacket());
-        this.updateStatus(event.getPacket().toString());
-    }
-
-    @EventHandler // Source: ISensorPacketConnection
-    public void onGarbageReceived(UnrecognizableMessageReceivedEvent event) {
-        // This should not be exposed to Android application developers.
-        // Included here just for testing.
-        Log.d(TAG, "Received garbage " + event.getMessageAsUnicode());
-        this.updateStatus(event.getMessageAsUnicode());
+    @EventHandler // Source: ISensorConnection
+    public void onNewSampleReceived(NewSampleReceivedEvent event) {
+        this.updateStatus("New data: " + event.getRecord() + " @" + event.getRemoteTimestamp());
     }
 
     private void updateStatus(String msg) {
@@ -125,10 +103,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     }
 
     private void test() {
-        Packet packet = new PacketOutBuzz();
-        // Packet writes should not be exposed to Android application developers.
-        // Included here just for testing.
-        ((AndroidBLESensorImpl)Objects.requireNonNull(this.sensor)).getFactoryBuilds().packetBased.write(packet);
+        // TODO: WIP
     }
 
 }

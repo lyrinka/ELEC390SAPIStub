@@ -4,6 +4,8 @@ import app.uvtracker.sensor.pii.connection.shared.IConnectable;
 
 public interface ISensorConnection extends IConnectable {
 
-    // TODO: implement this
+    // Emits event: NewSampleReceivedEvent
+
+    // TODO: more features
 
 }
