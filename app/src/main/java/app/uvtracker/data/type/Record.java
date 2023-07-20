@@ -29,6 +29,7 @@ public class Record implements IFlattenable {
 
     @NonNull
     public static Record decompress(byte uv, byte vis) {
+        // TODO: maybe extract this conversion out to somewhere?
         return new Record(
                 (float)decompress8(uv) / 10.9375f,
                 (float)decompress44(vis) * 2.4f
@@ -71,7 +72,7 @@ public class Record implements IFlattenable {
     @NonNull
     @Override
     public String toString() {
-        return this.flatten();
+        return String.format("{%1$.1flux,%2$.1fuvi}", this.illuminance, this.uvIndex);
     }
 
     private static float round2(float input) {

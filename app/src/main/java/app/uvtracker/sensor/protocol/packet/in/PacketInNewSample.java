@@ -64,7 +64,7 @@ public class PacketInNewSample extends PacketIn {
             sb.append(minute).append("m");
         }
         sb.append(second).append("s");
-        return this.type + String.format("{%1$s,%2$.1flux,%3$.1fuvi}", sb, this.record.illuminance, this.record.uvIndex);
+        return this.type + String.format("{%1$s,%2$s}", sb, this.record);
     }
 
 }

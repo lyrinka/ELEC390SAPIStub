@@ -2,6 +2,7 @@ package app.uvtracker.sensor.pii.connection.application;
 
 import androidx.annotation.NonNull;
 
+import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
 import app.uvtracker.sensor.pii.connection.packet.event.ParsedPacketReceivedEvent;
 import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
@@ -9,6 +10,7 @@ import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.EventRegistry;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.event.IEventSource;
+import app.uvtracker.sensor.protocol.packet.in.PacketInNewSample;
 
 public class PIISensorConnectionImpl extends EventRegistry implements ISensorConnection, IEventListener {
 
@@ -21,7 +23,8 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
     public PIISensorConnectionImpl(@NonNull ISensorPacketConnection baseConnection) {
         this.packetEventRegistry = new EventRegistry();
         this.baseConnection = baseConnection;
-        this.registerListener(this);
+        this.baseConnection.registerListener(this);
+        this.packetEventRegistry.registerListener(this);
     }
 
     // Base connection implementation
@@ -46,7 +49,7 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
         this.dispatch(event);
     }
 
-    // Specific implementation
+    // Packet event registry
     @EventHandler
     protected void onParsedPacketReception(@NonNull ParsedPacketReceivedEvent event) {
         this.packetEventRegistry.dispatch(event.getPacket());
@@ -57,7 +60,10 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
         return this.packetEventRegistry;
     }
 
-
-    // TODO: implement this
+    // Packet handling
+    @EventHandler
+    protected void onPacketInNewSample(PacketInNewSample packet) {
+        this.dispatch(new NewSampleReceivedEvent(packet));
+    }
 
 }
