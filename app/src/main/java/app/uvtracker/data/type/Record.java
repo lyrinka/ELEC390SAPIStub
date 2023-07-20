@@ -12,11 +12,6 @@ public class Record implements IFlattenable {
 
     private static final String TAG = Record.class.getSimpleName();
 
-    private static float round2(float input) {
-        if(Float.isNaN(input)) return 0.0f;
-        return Math.round(input * 100.0f) / 100.0f;
-    }
-
     @Nullable
     public static Record unflatten(@NonNull String input) {
         try {
@@ -32,9 +27,17 @@ public class Record implements IFlattenable {
         }
     }
 
+    @NonNull
+    public static Record decompress(byte uv, byte vis) {
+        return new Record(
+                (float)decompress8(uv) / 10.9375f,
+                (float)decompress44(vis) * 2.4f
+        );
+    }
 
-    private final float uvIndex;
-    private final float illuminance;
+
+    public final float uvIndex;
+    public final float illuminance;
 
     @Nullable
     private String flattenedString;
@@ -69,6 +72,22 @@ public class Record implements IFlattenable {
     @Override
     public String toString() {
         return this.flatten();
+    }
+
+    private static float round2(float input) {
+        if(Float.isNaN(input)) return 0.0f;
+        return Math.round(input * 100.0f) / 100.0f;
+    }
+
+    private static int decompress44(byte input0) {
+        int input = Byte.toUnsignedInt(input0);
+        int dig = (input & 0xF0) >> 4;
+        int exp = (input & 0x0F);
+        return dig << exp;
+    }
+
+    private static int decompress8(byte input0) {
+        return Byte.toUnsignedInt(input0);
     }
 
 }
