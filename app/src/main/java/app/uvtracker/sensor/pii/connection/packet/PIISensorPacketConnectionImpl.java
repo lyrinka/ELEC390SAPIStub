@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
+import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.bytestream.event.BytesReceivedEvent;
 import app.uvtracker.sensor.pii.connection.bytestream.ISensorBytestreamConnection;
 import app.uvtracker.sensor.pii.connection.packet.event.PacketReceivedEvent;
@@ -39,6 +40,12 @@ public class PIISensorPacketConnectionImpl extends EventRegistry implements ISen
     }
 
     // Base connection implementation
+    @Override
+    @NonNull
+    public ISensor getSensor() {
+        return this.baseConnection.getSensor();
+    }
+
     @Override
     public void reset() {
         this.baseConnection.reset();

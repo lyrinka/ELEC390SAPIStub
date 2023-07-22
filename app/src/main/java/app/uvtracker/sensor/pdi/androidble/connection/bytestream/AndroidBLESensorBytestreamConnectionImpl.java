@@ -21,6 +21,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.event.EventRegistry;
 import app.uvtracker.sensor.pdi.BLEOptions;
 import app.uvtracker.sensor.pii.connection.bytestream.event.BytesReceivedEvent;
@@ -38,6 +39,9 @@ public class AndroidBLESensorBytestreamConnectionImpl extends EventRegistry impl
 
     @NonNull
     private final Context context;
+
+    @NonNull
+    private final ISensor sensor;
 
     @Nullable
     private DelayedTask delayedTask;
@@ -60,9 +64,10 @@ public class AndroidBLESensorBytestreamConnectionImpl extends EventRegistry impl
     @NonNull
     private final FlowControlledBuffer writeStream;
 
-    public AndroidBLESensorBytestreamConnectionImpl(@NonNull BluetoothDevice device, @NonNull Context context) {
+    public AndroidBLESensorBytestreamConnectionImpl(@NonNull ISensor sensor, @NonNull BluetoothDevice device, @NonNull Context context) {
         this.handler = new Handler(Looper.getMainLooper()); // TODO: which thread to use?
         this.context = context;
+        this.sensor = sensor;
         this.device = device;
         this.internalStage = Stage.DISCONNECTED;
         this.bleCallback = new BluetoothGattCallbackImpl(this);
@@ -128,6 +133,12 @@ public class AndroidBLESensorBytestreamConnectionImpl extends EventRegistry impl
 
     private void dispatch(ConnectionStateChangeEvent.State state) {
         this.dispatch(new ConnectionStateChangeEvent(state, this.internalStage.getPercentage()));
+    }
+
+    @Override
+    @NonNull
+    public ISensor getSensor() {
+        return this.sensor;
     }
 
     @Override

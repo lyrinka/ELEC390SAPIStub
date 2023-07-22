@@ -2,6 +2,7 @@ package app.uvtracker.sensor.pii.connection.application;
 
 import androidx.annotation.NonNull;
 
+import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
 import app.uvtracker.sensor.pii.connection.packet.event.ParsedPacketReceivedEvent;
@@ -28,6 +29,12 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
     }
 
     // Base connection implementation
+    @Override
+    @NonNull
+    public ISensor getSensor() {
+        return this.baseConnection.getSensor();
+    }
+
     @Override
     public void reset() {
         this.baseConnection.reset();
