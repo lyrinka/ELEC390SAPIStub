@@ -19,6 +19,7 @@ import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEv
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
+import app.uvtracker.sensor.protocol.packet.out.PacketOutRequestSyncInfo;
 
 public class SensorActivity extends AppCompatActivity implements IEventListener {
 
@@ -113,7 +114,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     private void test() {
         // TODO: WIP
-//      ((AndroidBLESensorImpl)this.sensor).getFactoryBuilds().packetBased.write(new PacketOutKeepAlive(0x12345678));
+        ((AndroidBLESensorImpl)this.sensor).getFactoryBuilds().packetBased.write(new PacketOutRequestSyncInfo());
     }
 
 }

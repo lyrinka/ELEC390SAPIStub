@@ -11,15 +11,9 @@ import java.util.stream.Collectors;
 import app.uvtracker.sensor.protocol.packet.base.Packet;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalEstimation;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalSample;
+import app.uvtracker.sensor.protocol.packet.in.PacketInSyncInfo;
+import app.uvtracker.sensor.protocol.packet.out.PacketOutRequestSyncInfo;
 
-/*
-    Packet ID range conventions:
-        0x00 to 0x1F: System packets
-        0x20 to 0x3F: Data transfer & request packets
-        0x40 to 0x5F: HMI packets
-        0x60 to 0x6F: Reserved
-        0x70 to 0x7F: Debug & tracing
- */
 public interface PacketType {
 
     enum IN implements PacketType {
@@ -29,7 +23,7 @@ public interface PacketType {
         // Data: 0x20 ~ 0x3F
         NEW_OPTICAL_SAMPLE          (0x20, PacketInNewOpticalSample.class),
         NEW_OPTICAL_ESTIMATION      (0x21, PacketInNewOpticalEstimation.class),
-
+        SYNC_INFO                   (0x22, PacketInSyncInfo.class)
         ;
 
         private final int packetID;
@@ -83,7 +77,7 @@ public interface PacketType {
         // System: 0x00 ~ 0x1F
         // HMI: 0x10 ~ 0x2F
         // Data: 0x20 ~ 0x3F
-
+        REQUEST_SYNC_INFO           (0x22, PacketOutRequestSyncInfo.class)
         ;
 
         private final int packetID;
