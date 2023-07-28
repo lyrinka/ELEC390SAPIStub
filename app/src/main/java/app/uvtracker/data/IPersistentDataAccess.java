@@ -6,18 +6,18 @@ import androidx.annotation.Nullable;
 import java.util.Date;
 import java.util.Map;
 
-import app.uvtracker.data.type.Record;
+import app.uvtracker.data.type.OpticalRecord;
 
 public interface IPersistentDataAccess {
 
     void clearDB();
 
-    void writeHourlyAverage(@NonNull Date time, @NonNull Record record);
+    void writeHourlyAverage(@NonNull Date time, @NonNull OpticalRecord record);
 
     @Nullable
-    Record readHourlyAverage(@NonNull Date time);
+    OpticalRecord readHourlyAverage(@NonNull Date time);
 
     @NonNull
-    Map<Date, Record> readAllHourlyAverage();
+    Map<Date, OpticalRecord> readAllHourlyAverage();
 
 }

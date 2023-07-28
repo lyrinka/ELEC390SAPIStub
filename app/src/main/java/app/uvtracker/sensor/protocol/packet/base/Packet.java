@@ -2,6 +2,7 @@ package app.uvtracker.sensor.protocol.packet.base;
 
 import androidx.annotation.NonNull;
 
+import app.uvtracker.sensor.protocol.codec.exception.PacketFormatException;
 import app.uvtracker.sensor.protocol.packet.type.PacketType;
 
 public class Packet {
@@ -47,6 +48,11 @@ public class Packet {
 
     public void setPayload(@NonNull byte[] payload) {
         this.payload = payload;
+    }
+
+    public void requireLength(int length) throws PacketFormatException {
+        if(this.payload.length != length)
+            throw new PacketFormatException("Expecting " + length + " byte(s)." + this.payload.length, this);
     }
 
     @Override

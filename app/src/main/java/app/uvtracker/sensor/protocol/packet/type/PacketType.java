@@ -9,13 +9,8 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import app.uvtracker.sensor.protocol.packet.base.Packet;
-import app.uvtracker.sensor.protocol.packet.in.PacketInButtonInteract;
-import app.uvtracker.sensor.protocol.packet.in.PacketInDebug;
-import app.uvtracker.sensor.protocol.packet.in.PacketInKeepAlive;
-import app.uvtracker.sensor.protocol.packet.in.PacketInNewSample;
-import app.uvtracker.sensor.protocol.packet.out.PacketOutBuzz;
-import app.uvtracker.sensor.protocol.packet.out.PacketOutFlashLED;
-import app.uvtracker.sensor.protocol.packet.out.PacketOutKeepAlive;
+import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalEstimation;
+import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalSample;
 
 /*
     Packet ID range conventions:
@@ -29,14 +24,11 @@ public interface PacketType {
 
     enum IN implements PacketType {
 
-        // Debug
-        DEBUG           (0x7F, PacketInDebug.class),
-        // System
-        KEEP_ALIVE      (0x00, PacketInKeepAlive.class),
-        // Data transfer
-        NEW_SAMPLE(0x20, PacketInNewSample.class),
-        // HMI
-        BUTTON_INTERACT (0x40, PacketInButtonInteract.class),
+        // System: 0x00 ~ 0x1F
+        // HMI: 0x10 ~ 0x2F
+        // Data: 0x20 ~ 0x3F
+        NEW_OPTICAL_SAMPLE          (0x20, PacketInNewOpticalSample.class),
+        NEW_OPTICAL_ESTIMATION      (0x21, PacketInNewOpticalEstimation.class),
 
         ;
 
@@ -88,11 +80,9 @@ public interface PacketType {
 
     enum OUT implements PacketType {
 
-        // System
-        KEEP_ALIVE      (0x00, PacketOutKeepAlive.class),
-        // HMI
-        BUZZ            (0x41, PacketOutBuzz.class),
-        FLASH_LED       (0x42, PacketOutFlashLED.class),
+        // System: 0x00 ~ 0x1F
+        // HMI: 0x10 ~ 0x2F
+        // Data: 0x20 ~ 0x3F
 
         ;
 

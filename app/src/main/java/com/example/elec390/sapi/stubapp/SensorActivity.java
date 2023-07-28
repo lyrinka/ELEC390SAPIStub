@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Date;
 
+import app.uvtracker.sensor.pdi.androidble.AndroidBLESensorImpl;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
@@ -104,6 +105,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     private void test() {
         // TODO: WIP
+//      ((AndroidBLESensorImpl)this.sensor).getFactoryBuilds().packetBased.write(new PacketOutKeepAlive(0x12345678));
     }
 
 }
