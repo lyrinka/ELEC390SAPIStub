@@ -14,6 +14,7 @@ import java.util.Date;
 import app.uvtracker.sensor.pdi.androidble.AndroidBLESensorImpl;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
+import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
@@ -88,7 +89,14 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     @EventHandler // Source: ISensorConnection
     public void onNewSampleReceived(NewSampleReceivedEvent event) {
-        this.updateStatus("New data: " + event.getRecord() + " @" + event.getRemoteTimestamp());
+        TextView text = this.findViewById(R.id.sensor_txt_meas1);
+        text.setText("Data " + event.getSeconds() + ": " + event.getRecord());
+    }
+
+    @EventHandler // Source: ISensorConnection
+    public void onNewEstimationReceived(NewEstimationReceivedEvent event) {
+        TextView text = this.findViewById(R.id.sensor_txt_meas2);
+        text.setText("Estimation " + event.getSampleNumber() + ": " + event.getRecord() + " (Int. " + event.getSampleInterval() + ")");
     }
 
     private void updateStatus(String msg) {

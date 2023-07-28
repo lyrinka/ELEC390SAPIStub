@@ -3,7 +3,6 @@ package app.uvtracker.sensor.protocol.util;
 import androidx.annotation.NonNull;
 
 import app.uvtracker.data.type.OpticalRecord;
-import app.uvtracker.data.type.RemoteTimestamp;
 
 public class Packing {
 
@@ -52,15 +51,10 @@ public class Packing {
     }
 
     @NonNull
-    public static RemoteTimestamp unpackRemoteTimestamp(@NonNull byte[] buffer, int start, int ticks) {
-        return new RemoteTimestamp(Packing.unpack4(buffer, 0), ticks);
-    }
-
-    @NonNull
     public static OpticalRecord unpackOpticalRecord(@NonNull byte[] buffer, int start) {
         return new OpticalRecord(
-                (float)decompress8(buffer[1]) / 10.9375f,
-                (float)decompress44(buffer[0]) * 2.4f
+                (float)decompress8(buffer[start + 1]) / 10.9375f,
+                (float)decompress44(buffer[start]) * 2.4f
         );
     }
 

@@ -3,6 +3,7 @@ package app.uvtracker.sensor.pii.connection.application;
 import androidx.annotation.NonNull;
 
 import app.uvtracker.sensor.pii.ISensor;
+import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
 import app.uvtracker.sensor.pii.connection.packet.event.ParsedPacketReceivedEvent;
@@ -11,6 +12,7 @@ import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.EventRegistry;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.event.IEventSource;
+import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalEstimation;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalSample;
 
 public class PIISensorConnectionImpl extends EventRegistry implements ISensorConnection, IEventListener {
@@ -69,8 +71,13 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
 
     // Packet handling
     @EventHandler
-    protected void onPacketInNewSample(PacketInNewOpticalSample packet) {
+    protected void onPacketInNewOpticalSample(PacketInNewOpticalSample packet) {
         this.dispatch(new NewSampleReceivedEvent(packet));
+    }
+
+    @EventHandler
+    protected void onPacketInNewOpticalEstimation(PacketInNewOpticalEstimation packet) {
+        this.dispatch(new NewEstimationReceivedEvent(packet));
     }
 
 }
