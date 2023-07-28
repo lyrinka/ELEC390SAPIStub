@@ -10,16 +10,18 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Date;
+import java.util.Objects;
 
 import app.uvtracker.sensor.pdi.androidble.AndroidBLESensorImpl;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
+import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
-import app.uvtracker.sensor.protocol.packet.out.PacketOutRequestSyncInfo;
+import app.uvtracker.sensor.protocol.packet.out.PacketOutRequestSyncData;
 
 public class SensorActivity extends AppCompatActivity implements IEventListener {
 
@@ -114,7 +116,9 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     private void test() {
         // TODO: WIP
-        ((AndroidBLESensorImpl)this.sensor).getFactoryBuilds().packetBased.write(new PacketOutRequestSyncInfo());
+        ISensorPacketConnection p = ((AndroidBLESensorImpl)Objects.requireNonNull(this.sensor)).getFactoryBuilds().packetBased;
+//      p.write(new PacketOutRequestSyncInfo());
+        p.write(new PacketOutRequestSyncData(0, -1));
     }
 
 }

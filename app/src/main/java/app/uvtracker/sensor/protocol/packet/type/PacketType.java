@@ -11,7 +11,9 @@ import java.util.stream.Collectors;
 import app.uvtracker.sensor.protocol.packet.base.Packet;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalEstimation;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalSample;
+import app.uvtracker.sensor.protocol.packet.in.PacketInSyncData;
 import app.uvtracker.sensor.protocol.packet.in.PacketInSyncInfo;
+import app.uvtracker.sensor.protocol.packet.out.PacketOutRequestSyncData;
 import app.uvtracker.sensor.protocol.packet.out.PacketOutRequestSyncInfo;
 
 public interface PacketType {
@@ -23,7 +25,8 @@ public interface PacketType {
         // Data: 0x20 ~ 0x3F
         NEW_OPTICAL_SAMPLE          (0x20, PacketInNewOpticalSample.class),
         NEW_OPTICAL_ESTIMATION      (0x21, PacketInNewOpticalEstimation.class),
-        SYNC_INFO                   (0x22, PacketInSyncInfo.class)
+        SYNC_INFO                   (0x22, PacketInSyncInfo.class),
+        SYNC_DATA                   (0x23, PacketInSyncData.class),
         ;
 
         private final int packetID;
@@ -77,7 +80,8 @@ public interface PacketType {
         // System: 0x00 ~ 0x1F
         // HMI: 0x10 ~ 0x2F
         // Data: 0x20 ~ 0x3F
-        REQUEST_SYNC_INFO           (0x22, PacketOutRequestSyncInfo.class)
+        REQUEST_SYNC_INFO           (0x22, PacketOutRequestSyncInfo.class),
+        REQUEST_SYNC_DATA           (0x23,PacketOutRequestSyncData.class),
         ;
 
         private final int packetID;

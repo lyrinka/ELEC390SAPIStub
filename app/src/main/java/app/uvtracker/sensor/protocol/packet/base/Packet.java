@@ -55,6 +55,11 @@ public class Packet {
             throw new PacketFormatException("Expecting " + length + " byte(s)." + this.payload.length, this);
     }
 
+    public void requireAtLeastLength(int length) throws PacketFormatException {
+        if(this.payload.length < length)
+            throw new PacketFormatException("Expecting at least " + length + " byte(s)." + this.payload.length, this);
+    }
+
     @Override
     @NonNull
     public String toString() {

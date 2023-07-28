@@ -52,9 +52,12 @@ public class Packing {
 
     @NonNull
     public static OpticalRecord unpackOpticalRecord(@NonNull byte[] buffer, int start) {
+        byte uvRaw = buffer[start + 1];
+        byte visRaw = buffer[start];
+        if(uvRaw == -1 && visRaw == -1) return new OpticalRecord();
         return new OpticalRecord(
-                (float)decompress8(buffer[start + 1]) / 10.9375f,
-                (float)decompress44(buffer[start]) * 2.4f
+                (float)decompress8(uvRaw) / 10.9375f,
+                (float)decompress44(visRaw) * 2.4f
         );
     }
 

@@ -27,13 +27,21 @@ public class OpticalRecord implements IFlattenable {
         }
     }
 
+    public final boolean valid;
     public final float uvIndex;
     public final float illuminance;
 
     @Nullable
     private String flattenedString;
 
+    public OpticalRecord() {
+        this.valid = false;
+        this.uvIndex = 0f;
+        this.illuminance = 0f;
+    }
+
     public OpticalRecord(float uvIndex, float illuminance) {
+        this.valid = true;
         this.uvIndex = round2(uvIndex);
         this.illuminance = round2(illuminance);
     }

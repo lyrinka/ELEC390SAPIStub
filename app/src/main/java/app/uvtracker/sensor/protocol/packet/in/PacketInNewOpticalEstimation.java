@@ -20,9 +20,9 @@ public class PacketInNewOpticalEstimation extends PacketIn {
     public PacketInNewOpticalEstimation(@NonNull Packet packetBase) throws PacketFormatException {
         super(packetBase);
         packetBase.requireLength(7);
-        this.sampleNumber = Packing.unpack4(packetBase.getPayload(), 0);
-        this.sampleInterval =  Packing.unpack1(packetBase.getPayload(), 6);
-        this.record = Packing.unpackOpticalRecord(packetBase.getPayload(), 4);
+        this.sampleNumber = Packing.unpack4(this.payload, 0);
+        this.sampleInterval =  Packing.unpack1(this.payload, 6);
+        this.record = Packing.unpackOpticalRecord(this.payload, 4);
     }
 
     public int getSampleNumber() {

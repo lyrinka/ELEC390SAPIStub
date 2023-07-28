@@ -18,8 +18,8 @@ public class PacketInNewOpticalSample extends PacketIn {
     public PacketInNewOpticalSample(@NonNull Packet packetBase) throws PacketFormatException {
         super(packetBase);
         packetBase.requireLength(6);
-        this.seconds = Packing.unpack4(packetBase.getPayload(), 0);
-        this.record = Packing.unpackOpticalRecord(packetBase.getPayload(), 4);
+        this.seconds = Packing.unpack4(this.payload, 0);
+        this.record = Packing.unpackOpticalRecord(this.payload, 4);
     }
 
     public int getSampleSeconds() {

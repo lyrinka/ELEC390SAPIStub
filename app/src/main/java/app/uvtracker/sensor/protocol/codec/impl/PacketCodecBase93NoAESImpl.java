@@ -90,7 +90,7 @@ public class PacketCodecBase93NoAESImpl implements IPacketCodec {
         if(data.length < 3) throw new PacketFormatException("Packet is too small.", data);
         PacketType type = this.deserializeHeader(data[0]);
         if(type == null) throw new PacketFormatException("Packet ID " + (data[0] & 0x7F) + " does not exist.", data);
-        int length = data[1];
+        int length = Byte.toUnsignedInt(data[1]);
         if(data.length < length + 3) throw new PacketFormatException("Packet is too small and does not contain necessary fields.", data);
         byte crc = CRC8Helper.compute(data, length + 2);
         if(crc != data[length + 2]) throw new PacketFormatException("Packet is corrupted.", data);
