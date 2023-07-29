@@ -273,20 +273,19 @@ public class AndroidBLESensorBytestreamConnectionImpl extends EventRegistry impl
         this.dispatch(ConnectionStateChangeEvent.State.ESTABLISHED);
     }
 
-    protected void onCharacteristicChanged(BluetoothGattCharacteristic characteristic) {
+    protected void onCharacteristicChanged(BluetoothGattCharacteristic characteristic, @NonNull byte[] data) {
         this.debug("onCharacteristicChanged() [EV]");
         if(!this.ensureStage(Stage.ESTABLISHED)) {
             this.debug("- Connection flow still not done, we are at stage %1$s", this.internalStage);
             return;
         }
         if(characteristic.getUuid().equals(Objects.requireNonNull(this.getEndpoints().read).getUuid())) {
-            this.onDataReceived();
+            this.onDataReceived(data);
         }
     }
 
-    private void onDataReceived() {
+    private void onDataReceived(@NonNull byte[] data) {
         this.debug("- onDataReceived()");
-        byte[] data = Objects.requireNonNull(this.getEndpoints().read.getValue());
         this.debug("- Received %1$d bytes.", data.length);
         this.dispatch(new BytesReceivedEvent(data));
     }
@@ -477,7 +476,9 @@ class BluetoothGattCallbackImpl extends BluetoothGattCallback {
     @Override
     public void onCharacteristicChanged(@NonNull BluetoothGatt gatt, @NonNull BluetoothGattCharacteristic characteristic) {
         super.onCharacteristicChanged(gatt, characteristic);
-        this.post(() -> this.connection.onCharacteristicChanged(characteristic));
+        byte[] data = characteristic.getValue();
+        if(data == null) return;
+        this.post(() -> this.connection.onCharacteristicChanged(characteristic, data));
     }
 
 }
