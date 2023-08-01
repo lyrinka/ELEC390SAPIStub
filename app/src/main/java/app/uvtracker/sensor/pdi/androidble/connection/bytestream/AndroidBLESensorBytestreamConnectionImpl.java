@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.event.EventRegistry;
-import app.uvtracker.sensor.pdi.BLEOptions;
+import app.uvtracker.sensor.BLEOptions;
 import app.uvtracker.sensor.pii.connection.bytestream.event.BytesReceivedEvent;
 import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
 import app.uvtracker.sensor.pii.connection.bytestream.ISensorBytestreamConnection;

@@ -2,7 +2,7 @@ package app.uvtracker.sensor.pii.connection.application;
 
 import androidx.annotation.NonNull;
 
-import app.uvtracker.data.optical.cache.IOpticalDataCache;
+import app.uvtracker.data.optical.cache.IOpticalDataCacheReader;
 import app.uvtracker.sensor.pii.connection.shared.IConnectable;
 
 public interface ISensorConnection extends IConnectable {
@@ -17,7 +17,7 @@ public interface ISensorConnection extends IConnectable {
     // Emits event: SyncProgressEvent
 
     @NonNull
-    IOpticalDataCache getOpticalDataCache();
+    IOpticalDataCacheReader getOpticalDataCacheReader();
 
     boolean isSyncing();
 

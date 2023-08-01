@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import java.util.Objects;
 
 import app.uvtracker.data.optical.cache.IOpticalDataCache;
+import app.uvtracker.data.optical.cache.IOpticalDataCacheReader;
+import app.uvtracker.sensor.BLEOptions;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
@@ -76,7 +78,7 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
 
     @Override
     @NonNull
-    public IOpticalDataCache getOpticalDataCache() {
+    public IOpticalDataCacheReader getOpticalDataCacheReader() {
         return this.syncManager.getCache();
     }
 
@@ -145,7 +147,7 @@ class SyncManager implements IEventListener {
     private final TimeoutTask timeoutTask;
 
     @Nullable
-    PacketInSyncInfo latestSyncInfo;
+    private PacketInSyncInfo latestSyncInfo;
 
     @NonNull
     private final IOpticalDataCache cache;
@@ -156,7 +158,7 @@ class SyncManager implements IEventListener {
     public SyncManager(@NonNull PIISensorConnectionImpl connection) {
         this.connection = connection;
         this.stage = Stage.DISCONNECTED;
-        this.timeoutTask = new TimeoutTask(1000, this::abortSync);
+        this.timeoutTask = new TimeoutTask(BLEOptions.Sync.SYNC_TIMEOUT, this::abortSync);
         this.cache = IOpticalDataCache.getVolatileImpl();
         this.connection.registerListener(this);
         this.connection.getPacketEventManager().registerListener(this);
