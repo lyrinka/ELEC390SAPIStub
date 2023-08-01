@@ -15,6 +15,7 @@ import java.util.Objects;
 import app.uvtracker.sensor.pdi.androidble.AndroidBLESensorImpl;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
+import app.uvtracker.sensor.pii.connection.application.PIISensorConnectionImpl;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
@@ -116,9 +117,8 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     private void test() {
         // TODO: WIP
-        ISensorPacketConnection p = ((AndroidBLESensorImpl)Objects.requireNonNull(this.sensor)).getFactoryBuilds().packetBased;
-//      p.write(new PacketOutRequestSyncInfo());
-        p.write(new PacketOutRequestSyncData(0, -1));
+        PIISensorConnectionImpl connection = (PIISensorConnectionImpl)((AndroidBLESensorImpl)Objects.requireNonNull(this.sensor)).getFactoryBuilds().applicationHandle;
+        connection.sync();
     }
 
 }
