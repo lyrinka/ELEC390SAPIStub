@@ -2,12 +2,18 @@ package app.uvtracker.data.optical.cache;
 
 import androidx.annotation.Nullable;
 
+import java.util.Date;
+
 import app.uvtracker.data.optical.OpticalRecord;
 import app.uvtracker.sensor.pii.event.IEventSource;
 
 public interface IOpticalDataCacheReader extends IEventSource {
 
     // Emits event: OpticalDataCacheUpdateEvent
+
+    long getDeviceBootTime();
+
+    long getSampleInterval();
 
     int getStartIndex();
 
@@ -20,5 +26,8 @@ public interface IOpticalDataCacheReader extends IEventSource {
 
     @Nullable
     OpticalRecord read(int index);
+
+    @Nullable
+    OpticalRecord read(Date date);
 
 }

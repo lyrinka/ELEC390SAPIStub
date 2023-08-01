@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Date;
 import java.util.Objects;
 
 import app.uvtracker.data.optical.cache.IOpticalDataCache;
@@ -202,6 +203,8 @@ class SyncManager implements IEventListener {
         this.timeoutTask.refresh();
         Log.d(TAG, "Processing sync info packet...");
         this.latestSyncInfo = packet;
+        this.cache.setClockOffset(packet.getTimestamp(), packet.getSampleCount() * packet.getSampleInterval() + packet.getCurrentSecondCounter(), packet.getSampleInterval());
+        Log.d(TAG, "Clock offset: device boot time " + new Date(this.cache.getDeviceBootTime()));
         this.connection.dispatch(new SyncProgressEvent(SyncProgressEvent.Stage.INITIATING));
         this.progressInfoCount = 0;
         this.processSync(true);

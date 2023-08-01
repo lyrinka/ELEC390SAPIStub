@@ -3,6 +3,8 @@ package app.uvtracker.data.optical.cache;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Date;
+
 import app.uvtracker.data.optical.OpticalRecord;
 import app.uvtracker.data.optical.cache.impl.VolatileOpticalDataCacheImpl;
 import app.uvtracker.sensor.pii.event.IEventSource;
@@ -13,6 +15,8 @@ public interface IOpticalDataCache extends IOpticalDataCacheReader {
     static IOpticalDataCache getVolatileImpl() {
         return new VolatileOpticalDataCacheImpl();
     }
+
+    void setClockOffset(Date localTime, int remoteSeconds, int interval);
 
     @Nullable
     int[] computeRequestInterval(int first, int last);

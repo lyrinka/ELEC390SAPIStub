@@ -3,6 +3,7 @@ package app.uvtracker.data.optical.cache.impl;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Date;
 import java.util.HashMap;
 
 import app.uvtracker.data.optical.OpticalRecord;
@@ -39,9 +40,23 @@ public class VolatileOpticalDataCacheImpl extends EventRegistry implements IOpti
     @NonNull
     private final HashMap<Integer, OpticalRecord> storage;
 
+    private long deviceBootTime = 0;
+
+    private int sampleInterval = 0;
+
     public VolatileOpticalDataCacheImpl() {
         this.interval = new Interval();
         this.storage = new HashMap<>();
+    }
+
+    @Override
+    public long getDeviceBootTime() {
+        return this.deviceBootTime;
+    }
+
+    @Override
+    public long getSampleInterval() {
+        return this.sampleInterval;
     }
 
     @Override
@@ -66,6 +81,12 @@ public class VolatileOpticalDataCacheImpl extends EventRegistry implements IOpti
             return input;
         }
         return null;
+    }
+
+    @Override
+    public void setClockOffset(Date localTime, int remoteSeconds, int interval) {
+        this.sampleInterval = interval;
+        this.deviceBootTime = localTime.getTime() - (1000L * remoteSeconds);
     }
 
     @Nullable
@@ -99,6 +120,15 @@ public class VolatileOpticalDataCacheImpl extends EventRegistry implements IOpti
     @Nullable
     public OpticalRecord read(int index) {
         return this.storage.get(index);
+    }
+
+    @Nullable
+    @Override
+    public OpticalRecord read(Date date) {
+        if(this.sampleInterval == 0) return null;
+        long offset = date.getTime() - this.deviceBootTime;
+        int sampleNumber = (int)Math.round((float)offset / (float)this.sampleInterval);
+        return this.read(sampleNumber);
     }
 
 }
