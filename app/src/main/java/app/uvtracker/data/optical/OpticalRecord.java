@@ -1,4 +1,4 @@
-package app.uvtracker.data.type;
+package app.uvtracker.data.optical;
 
 import android.util.Log;
 
@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import app.uvtracker.data.IFlattenable;
 
 public class OpticalRecord implements IFlattenable {
 

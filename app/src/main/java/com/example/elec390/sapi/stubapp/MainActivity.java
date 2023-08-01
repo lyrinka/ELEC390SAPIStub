@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements IEventListener, R
             }
         }
 
-        // We register event handlers. Please see methods annotated with @EventHandler for explainations.
+        // We register event handlers. Please see methods annotated with @EventHandler for explanations.
         this.scanner.registerListener(this);
 
         // We create a recycler view adapter.

@@ -2,7 +2,7 @@ package app.uvtracker.sensor.pii.connection.application.event;
 
 import androidx.annotation.NonNull;
 
-import app.uvtracker.data.type.OpticalRecord;
+import app.uvtracker.data.optical.OpticalRecord;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalSample;
 
 public class NewSampleReceivedEvent {

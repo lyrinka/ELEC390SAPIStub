@@ -16,7 +16,7 @@ public class Packet {
     protected byte[] payload;
 
     @NonNull
-    protected Date timestamp;
+    protected final Date timestamp;
 
     public Packet(@NonNull PacketType type, @NonNull byte[] payload) {
         this.type = type;

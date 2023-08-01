@@ -12,17 +12,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Date;
 import java.util.Objects;
 
-import app.uvtracker.sensor.pdi.androidble.AndroidBLESensorImpl;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
-import app.uvtracker.sensor.pii.connection.application.PIISensorConnectionImpl;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
-import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
+import app.uvtracker.sensor.pii.connection.application.event.SyncProgressEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
-import app.uvtracker.sensor.protocol.packet.out.PacketOutRequestSyncData;
 
 public class SensorActivity extends AppCompatActivity implements IEventListener {
 
@@ -92,6 +89,13 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     }
 
     @EventHandler // Source: ISensorConnection
+    public void onSyncProgress(SyncProgressEvent event) {
+        String status = "Sync: " + event.getStage() + ": " + event.getProgress();
+        Log.d(TAG, ">>> Callback: " + status);
+        this.updateStatus(">>> " + status);
+    }
+
+    @EventHandler // Source: ISensorConnection
     public void onNewSampleReceived(NewSampleReceivedEvent event) {
         TextView text = this.findViewById(R.id.sensor_txt_meas1);
         text.setText("Data " + event.getSeconds() + ": " + event.getRecord());
@@ -117,8 +121,13 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     private void test() {
         // TODO: WIP
-        PIISensorConnectionImpl connection = (PIISensorConnectionImpl)((AndroidBLESensorImpl)Objects.requireNonNull(this.sensor)).getFactoryBuilds().applicationHandle;
-        connection.sync();
+        Objects.requireNonNull(this.connection);
+        if(this.connection.isSyncing()) {
+            this.connection.abortSync();
+        }
+        else {
+            this.connection.startSync();
+        }
     }
 
 }

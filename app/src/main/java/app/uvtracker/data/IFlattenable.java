@@ -1,4 +1,4 @@
-package app.uvtracker.data.type;
+package app.uvtracker.data;
 
 import androidx.annotation.NonNull;
 

@@ -2,7 +2,7 @@ package app.uvtracker.sensor.protocol.util;
 
 import androidx.annotation.NonNull;
 
-import app.uvtracker.data.type.OpticalRecord;
+import app.uvtracker.data.optical.OpticalRecord;
 
 public class Packing {
 

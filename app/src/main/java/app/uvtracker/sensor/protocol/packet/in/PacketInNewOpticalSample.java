@@ -2,7 +2,7 @@ package app.uvtracker.sensor.protocol.packet.in;
 
 import androidx.annotation.NonNull;
 
-import app.uvtracker.data.type.OpticalRecord;
+import app.uvtracker.data.optical.OpticalRecord;
 import app.uvtracker.sensor.protocol.codec.exception.PacketFormatException;
 import app.uvtracker.sensor.protocol.packet.base.Packet;
 import app.uvtracker.sensor.protocol.packet.base.PacketIn;
