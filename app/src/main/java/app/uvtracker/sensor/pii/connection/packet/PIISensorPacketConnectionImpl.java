@@ -75,8 +75,7 @@ public class PIISensorPacketConnectionImpl extends EventRegistry implements ISen
             encoded = IPacketCodec.get().encode(packet);
         }
         catch (CodecException e) {
-            // TODO: how do we deal with this exception?
-            e.printStackTrace();
+            Log.d(TAG, "Encoding exception:", e);
             return false;
         }
         Log.d(TAG, "Encoded " + packet);
@@ -92,14 +91,14 @@ public class PIISensorPacketConnectionImpl extends EventRegistry implements ISen
             if(message == null) continue;
             if(message.length() > 1 && message.startsWith("#")) {
                 try {
+                    Log.d(TAG, "Received " + message);
                     Packet decoded = IPacketCodec.get().decode(message.substring(1));
                     Log.d(TAG, "Decoded " + decoded);
                     this.dispatch(PacketReceivedEvent.fromPacket(decoded));
                     continue;
                 }
                 catch (CodecException e) {
-                    // TODO: how do we better log this exception?
-                    e.printStackTrace();
+                    Log.d(TAG, "Decoding exception:", e);
                 }
             }
             Log.d(TAG, "Received " + message);

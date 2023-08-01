@@ -25,11 +25,11 @@ public class PacketFormatException extends CodecException {
         this.packet = packet;
     }
 
-    @Nullable
+    @NonNull
     @Override
     public String getMessage() {
         String superMessage = super.getMessage();
-        if(superMessage == null) return null;
+        if(superMessage == null) return "(no further details)";
         StringBuilder sb = new StringBuilder(superMessage);
         if(this.data != null) {
             sb.append(" Packet dump: {");
