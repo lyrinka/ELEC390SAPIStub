@@ -17,6 +17,7 @@ import app.uvtracker.data.optical.OpticalRecord;
 import app.uvtracker.data.optical.TimedRecord;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
+import app.uvtracker.sensor.pii.connection.application.event.BatteryInfoEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.SyncDataReceivedEvent;
@@ -105,6 +106,12 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         text.setText("Estimation " + event.getSampleNumber() + ": " + event.getRecord() + " (Int. " + event.getSampleInterval() + ")");
     }
 
+    @EventHandler
+    public void onBatteryMeas(BatteryInfoEvent event) {
+        Log.d(TAG, ">>> Battery: " + event);
+        this.updateStatus("Battery: " + event);
+    }
+
     @EventHandler // Source: ISensorConnection
     public void onSyncProgress(SyncProgressChangedEvent event) {
         String status = "Sync: " + event.getStage() + ": " + event.getProgress();
@@ -116,10 +123,10 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     public void onSyncData(SyncDataReceivedEvent event) {
         List<TimedRecord<OpticalRecord>> data = event.getData();
         if(data.size() == 0) {
-            Log.d(TAG, "[DATA] Size: 0.");
+            Log.d(TAG, ">>> Data size: 0.");
         }
         else {
-            Log.d(TAG, String.format("[DATA] Size: %d. First: %s. Last: %s.", data.size(), data.get(0), data.get(data.size() - 1)));
+            Log.d(TAG, String.format(">>> Data size: %d. First: %s. Last: %s.", data.size(), data.get(0), data.get(data.size() - 1)));
         }
     }
 

@@ -16,6 +16,7 @@ import app.uvtracker.data.optical.OpticalRecord;
 import app.uvtracker.data.optical.TimedRecord;
 import app.uvtracker.sensor.BLEOptions;
 import app.uvtracker.sensor.pii.ISensor;
+import app.uvtracker.sensor.pii.connection.application.event.BatteryInfoEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.SyncDataReceivedEvent;
@@ -27,6 +28,7 @@ import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.EventRegistry;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.event.IEventSource;
+import app.uvtracker.sensor.protocol.packet.in.PacketInBatteryInfo;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalEstimation;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalSample;
 import app.uvtracker.sensor.protocol.packet.in.PacketInSyncData;
@@ -126,6 +128,11 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
     @EventHandler
     protected void onPacketInNewOpticalEstimation(PacketInNewOpticalEstimation packet) {
         this.dispatch(new NewEstimationReceivedEvent(packet));
+    }
+
+    @EventHandler
+    protected void onPacketInBatteryInfo(PacketInBatteryInfo packet) {
+        this.dispatch(new BatteryInfoEvent(packet));
     }
 
 }
