@@ -55,7 +55,7 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
         this.packetEventRegistry = new EventRegistry();
         this.baseConnection = baseConnection;
         this.latestDataStorage = new LatestDataStorage();
-        this.syncManager = new SyncManager(this);
+        this.syncManager = new SyncManager(new Handler(Looper.getMainLooper()), this);
         this.baseConnection.registerListener(this);
         this.packetEventRegistry.registerListener(this);
     }
@@ -190,6 +190,9 @@ class SyncManager implements IEventListener {
     }
 
     @NonNull
+    private final Handler handler;
+
+    @NonNull
     private final PIISensorConnectionImpl connection;
 
     private Stage stage;
@@ -209,7 +212,8 @@ class SyncManager implements IEventListener {
     private int progressInfoCount;
     private int progressInfoTotalCount;
 
-    public SyncManager(@NonNull PIISensorConnectionImpl connection) {
+    public SyncManager(@NonNull Handler handler, @NonNull PIISensorConnectionImpl connection) {
+        this.handler = handler;
         this.connection = connection;
         this.stage = Stage.DISCONNECTED;
         this.timeoutTask = new TimeoutTask(BLEOptions.Sync.SYNC_TIMEOUT, this::abortSync);
@@ -320,7 +324,7 @@ class SyncManager implements IEventListener {
         }
         this.progressInfoCount += count;
         this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.PROCESSING, Math.round((float)this.progressInfoCount / (float)this.progressInfoTotalCount * 100.0f)));
-        this.connection.dispatch(new SyncDataReceivedEvent(list));
+        this.handler.post(() -> this.connection.dispatch(new SyncDataReceivedEvent(list)));
         this.processSync(false);
     }
 
@@ -369,6 +373,7 @@ class SyncManager implements IEventListener {
         int count = Integer.min(last - first + 1, PacketOutRequestSyncData.MAX_COUNT);
         first = last - count + 1;
         Log.d(TAG, "Requesting remote DB: " + first + ", " + count);
+        this.timeoutTask.refresh();
         this.connection.getBaseConnection().write(new PacketOutRequestSyncData(first, count));
     }
 
