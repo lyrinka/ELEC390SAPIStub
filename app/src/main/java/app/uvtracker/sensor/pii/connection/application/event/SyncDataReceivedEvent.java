@@ -2,30 +2,23 @@ package app.uvtracker.sensor.pii.connection.application.event;
 
 import androidx.annotation.NonNull;
 
+import java.util.List;
+
 import app.uvtracker.data.optical.OpticalRecord;
-import app.uvtracker.data.optical.SampleTimestamp;
+import app.uvtracker.data.optical.TimedRecord;
 
 public class SyncDataReceivedEvent {
 
     @NonNull
-    private final SampleTimestamp time;
+    private final List<TimedRecord<OpticalRecord>> data;
 
-    @NonNull
-    private final OpticalRecord record;
-
-    public SyncDataReceivedEvent(@NonNull SampleTimestamp time, @NonNull OpticalRecord record) {
-        this.time = time;
-        this.record = record;
+    public SyncDataReceivedEvent(@NonNull List<TimedRecord<OpticalRecord>> data) {
+        this.data = data;
     }
 
     @NonNull
-    public SampleTimestamp getTime() {
-        return time;
-    }
-
-    @NonNull
-    public OpticalRecord getRecord() {
-        return record;
+    public List<TimedRecord<OpticalRecord>> getData() {
+        return this.data;
     }
 
 }

@@ -2,7 +2,7 @@ package app.uvtracker.sensor.pii.connection.application.event;
 
 import androidx.annotation.NonNull;
 
-public class SyncProgressEvent {
+public class SyncProgressChangedEvent {
 
     public enum Stage {
         INITIATING,
@@ -17,7 +17,7 @@ public class SyncProgressEvent {
 
     private final int progress;
 
-    public SyncProgressEvent(Stage stage) {
+    public SyncProgressChangedEvent(Stage stage) {
         this.stage = stage;
         switch(stage) {
             case INITIATING:
@@ -34,7 +34,7 @@ public class SyncProgressEvent {
         }
     }
 
-    public SyncProgressEvent(@NonNull Stage stage, int progress) {
+    public SyncProgressChangedEvent(@NonNull Stage stage, int progress) {
         this.stage = stage;
         this.progress = progress;
     }

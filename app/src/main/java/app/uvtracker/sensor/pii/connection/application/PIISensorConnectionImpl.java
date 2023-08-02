@@ -7,17 +7,19 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import app.uvtracker.data.optical.OpticalRecord;
-import app.uvtracker.data.optical.SampleTimestamp;
+import app.uvtracker.data.optical.TimedRecord;
 import app.uvtracker.sensor.BLEOptions;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.SyncDataReceivedEvent;
-import app.uvtracker.sensor.pii.connection.application.event.SyncProgressEvent;
+import app.uvtracker.sensor.pii.connection.application.event.SyncProgressChangedEvent;
 import app.uvtracker.sensor.pii.connection.packet.ISensorPacketConnection;
 import app.uvtracker.sensor.pii.connection.packet.event.ParsedPacketReceivedEvent;
 import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
@@ -189,7 +191,7 @@ class SyncManager implements IEventListener {
         Log.d(TAG, "Sync info request packet sent.");
         this.stage = Stage.INITIATING;
         this.timeoutTask.refresh();
-        this.connection.dispatch(new SyncProgressEvent(SyncProgressEvent.Stage.INITIATING));
+        this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.INITIATING));
         return true;
     }
 
@@ -201,7 +203,7 @@ class SyncManager implements IEventListener {
         this.resetSyncStates();
         this.stage = Stage.INITIATING;
         this.timeoutTask.refresh();
-        this.connection.dispatch(new SyncProgressEvent(SyncProgressEvent.Stage.INITIATING));
+        this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.INITIATING));
         return true;
     }
 
@@ -209,7 +211,7 @@ class SyncManager implements IEventListener {
         Log.d(TAG, "abortSync()");
         if(this.stage == Stage.INITIATING || this.stage == Stage.PROCESSING) {
             this.stage = Stage.IDLE;
-            this.connection.dispatch(new SyncProgressEvent(SyncProgressEvent.Stage.ABORTED));
+            this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.ABORTED));
             return true;
         }
         return false;
@@ -228,7 +230,7 @@ class SyncManager implements IEventListener {
             Log.d(TAG, "Device boot time: " + new Date(this.deviceBootTime));
         }
         this.latestSyncInfo = packet;
-        this.connection.dispatch(new SyncProgressEvent(SyncProgressEvent.Stage.INITIATING));
+        this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.INITIATING));
         this.progressInfoCount = 0;
         this.processSync(true);
     }
@@ -244,7 +246,7 @@ class SyncManager implements IEventListener {
         if(count == 0) {
             this.stage = Stage.IDLE;
             this.timeoutTask.cancel();
-            this.connection.dispatch(new SyncProgressEvent(SyncProgressEvent.Stage.ABORTED));
+            this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.ABORTED));
             return;
         }
 
@@ -258,18 +260,20 @@ class SyncManager implements IEventListener {
             if(last > this.lastSample) this.lastSample = last;
         }
 
+        List<TimedRecord<OpticalRecord>> list = new ArrayList<>(count);
         for(int i = count - 1; i >= 0; i--) {
             OpticalRecord record = packet.getRecords()[i];
             if(!record.valid) {
                 Log.d(TAG, "Received invalid record " + first + ". This may be a race condition and not a bug.");
                 continue;
             }
-            SampleTimestamp time = new SampleTimestamp(this.deviceBootTime, first + i, this.sampleInterval);
-            this.connection.dispatch(new SyncDataReceivedEvent(time, record));
+            TimedRecord<OpticalRecord> sample = new TimedRecord<>(record, this.deviceBootTime, first + i, this.sampleInterval);
+            list.add(sample);
         }
-
         this.progressInfoCount += count;
-        this.connection.dispatch(new SyncProgressEvent(SyncProgressEvent.Stage.PROCESSING, Math.round((float)this.progressInfoCount / (float)this.progressInfoTotalCount * 100.0f)));
+
+        this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.PROCESSING, Math.round((float)this.progressInfoCount / (float)this.progressInfoTotalCount * 100.0f)));
+        this.connection.dispatch(new SyncDataReceivedEvent(list));
         this.processSync(false);
     }
 
@@ -279,7 +283,7 @@ class SyncManager implements IEventListener {
         if(this.latestSyncInfo.getSampleCount() == 0) {
             this.stage = Stage.IDLE;
             this.timeoutTask.cancel();
-            this.connection.dispatch(new SyncProgressEvent(SyncProgressEvent.Stage.DONE_NOUPDATE));
+            this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.DONE_NOUPDATE));
             return;
         }
 
@@ -298,7 +302,7 @@ class SyncManager implements IEventListener {
         else {
             this.stage = Stage.IDLE;
             this.timeoutTask.cancel();
-            this.connection.dispatch(new SyncProgressEvent(firstTime ? SyncProgressEvent.Stage.DONE_NOUPDATE : SyncProgressEvent.Stage.DONE));
+            this.connection.dispatch(new SyncProgressChangedEvent(firstTime ? SyncProgressChangedEvent.Stage.DONE_NOUPDATE : SyncProgressChangedEvent.Stage.DONE));
             return;
         }
         int rawCount = last - first + 1;
@@ -326,7 +330,7 @@ class SyncManager implements IEventListener {
                 Log.d(TAG, "Connection lost. Stage change to DISCONNECTED");
                 boolean flag = this.isSyncing();
                 this.stage = Stage.DISCONNECTED;
-                if(flag) this.connection.dispatch(new SyncProgressEvent(SyncProgressEvent.Stage.ABORTED));
+                if(flag) this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.ABORTED));
                 break;
         }
     }

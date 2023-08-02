@@ -8,9 +8,7 @@ import androidx.annotation.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import app.uvtracker.data.IFlattenable;
-
-public class OpticalRecord implements IFlattenable {
+public class OpticalRecord {
 
     private static final String TAG = OpticalRecord.class.getSimpleName();
 
@@ -49,7 +47,6 @@ public class OpticalRecord implements IFlattenable {
     }
 
     @NonNull
-    @Override
     public String flatten() {
         if(this.flattenedString == null)
             this.flattenedString = this.flattenCore();
@@ -57,7 +54,7 @@ public class OpticalRecord implements IFlattenable {
     }
 
     @NonNull
-    public String flattenCore() {
+    private String flattenCore() {
         try {
             JSONObject obj = new JSONObject();
             obj.put("uv", this.uvIndex);

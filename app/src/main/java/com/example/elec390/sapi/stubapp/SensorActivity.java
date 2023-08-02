@@ -10,15 +10,17 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
-import app.uvtracker.data.optical.SampleTimestamp;
+import app.uvtracker.data.optical.OpticalRecord;
+import app.uvtracker.data.optical.TimedRecord;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.SyncDataReceivedEvent;
-import app.uvtracker.sensor.pii.connection.application.event.SyncProgressEvent;
+import app.uvtracker.sensor.pii.connection.application.event.SyncProgressChangedEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
@@ -45,6 +47,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         this.sensor = IntentDataHelper.sensor;
         // We create a connection and register event listeners.
         this.connection = sensor.getConnection();
+        this.connection.unregisterAll();
         this.connection.registerListener(this);
 
         TextView text = this.findViewById(R.id.sensor_txt_disp);
@@ -103,7 +106,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     }
 
     @EventHandler // Source: ISensorConnection
-    public void onSyncProgress(SyncProgressEvent event) {
+    public void onSyncProgress(SyncProgressChangedEvent event) {
         String status = "Sync: " + event.getStage() + ": " + event.getProgress();
         Log.d(TAG, ">>> Callback: " + status);
         this.updateStatus(">>> " + status);
@@ -111,7 +114,8 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     @EventHandler // Source: ISensorConnection
     public void onSyncData(SyncDataReceivedEvent event) {
-        Log.d(TAG, "[DATA] " + event.getTime() + " " + event.getRecord());
+        List<TimedRecord<OpticalRecord>> data = event.getData();
+        Log.d(TAG, String.format("[DATA] Size: %d. First: %s. Last: %s.", data.size(), data.get(0), data.get(data.size() - 1)));
     }
 
     private void updateStatus(String msg) {
