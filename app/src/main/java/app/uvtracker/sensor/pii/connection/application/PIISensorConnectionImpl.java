@@ -290,8 +290,16 @@ class SyncManager implements IEventListener {
         int first = this.latestSyncInfo.getSampleStart();
         int last = first + this.latestSyncInfo.getSampleCount() - 1;
 
+        if(firstTime) {
+            int count = 0;
+            if(first < this.firstSample) count += this.firstSample - first;
+            if(last > this.lastSample) count += last - this.lastSample;
+            this.progressInfoTotalCount = count;
+        }
+
         if(this.firstSample < 0 || this.lastSample < 0) {
-            // Do nothing
+            // IF statement left empty on-purpose
+            // to stop ELSE statement from processing this case
         }
         else if(last > this.lastSample) {
             first = this.lastSample + 1;
@@ -305,11 +313,7 @@ class SyncManager implements IEventListener {
             this.connection.dispatch(new SyncProgressChangedEvent(firstTime ? SyncProgressChangedEvent.Stage.DONE_NOUPDATE : SyncProgressChangedEvent.Stage.DONE));
             return;
         }
-        int rawCount = last - first + 1;
-        if(firstTime) {
-            this.progressInfoTotalCount = rawCount;
-        }
-        int count = Integer.min(rawCount, PacketOutRequestSyncData.MAX_COUNT);
+        int count = Integer.min(last - first + 1, PacketOutRequestSyncData.MAX_COUNT);
         first = last - count + 1;
         Log.d(TAG, "Requesting remote DB: " + first + ", " + count);
         this.connection.getBaseConnection().write(new PacketOutRequestSyncData(first, count));
