@@ -10,10 +10,17 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
+import app.uvtracker.data.optical.OpticalRecord;
+import app.uvtracker.data.optical.TimedRecord;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
+import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
+import app.uvtracker.sensor.pii.connection.application.event.SyncDataReceivedEvent;
+import app.uvtracker.sensor.pii.connection.application.event.SyncProgressChangedEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.connection.shared.event.ConnectionStateChangeEvent;
@@ -40,6 +47,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
         this.sensor = IntentDataHelper.sensor;
         // We create a connection and register event listeners.
         this.connection = sensor.getConnection();
+        this.connection.unregisterAll();
         this.connection.registerListener(this);
 
         TextView text = this.findViewById(R.id.sensor_txt_disp);
@@ -87,7 +95,27 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     @EventHandler // Source: ISensorConnection
     public void onNewSampleReceived(NewSampleReceivedEvent event) {
-        this.updateStatus("New data: " + event.getRecord() + " @" + event.getRemoteTimestamp());
+        TextView text = this.findViewById(R.id.sensor_txt_meas1);
+        text.setText("Data " + event.getSeconds() + ": " + event.getRecord());
+    }
+
+    @EventHandler // Source: ISensorConnection
+    public void onNewEstimationReceived(NewEstimationReceivedEvent event) {
+        TextView text = this.findViewById(R.id.sensor_txt_meas2);
+        text.setText("Estimation " + event.getSampleNumber() + ": " + event.getRecord() + " (Int. " + event.getSampleInterval() + ")");
+    }
+
+    @EventHandler // Source: ISensorConnection
+    public void onSyncProgress(SyncProgressChangedEvent event) {
+        String status = "Sync: " + event.getStage() + ": " + event.getProgress();
+        Log.d(TAG, ">>> Callback: " + status);
+        this.updateStatus(">>> " + status);
+    }
+
+    @EventHandler // Source: ISensorConnection
+    public void onSyncData(SyncDataReceivedEvent event) {
+        List<TimedRecord<OpticalRecord>> data = event.getData();
+        Log.d(TAG, String.format("[DATA] Size: %d. First: %s. Last: %s.", data.size(), data.get(0), data.get(data.size() - 1)));
     }
 
     private void updateStatus(String msg) {
@@ -104,6 +132,13 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     private void test() {
         // TODO: WIP
+        Objects.requireNonNull(this.connection);
+        if(this.connection.isSyncing()) {
+            this.connection.abortSync();
+        }
+        else {
+            this.connection.startSync();
+        }
     }
 
 }

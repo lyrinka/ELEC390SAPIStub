@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import app.uvtracker.sensor.pdi.BLEOptions;
+import app.uvtracker.sensor.BLEOptions;
 import app.uvtracker.sensor.pdi.androidble.AndroidBLESensorImpl;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.event.EventRegistry;
