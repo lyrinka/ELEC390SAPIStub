@@ -12,10 +12,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Date;
 import java.util.Objects;
 
+import app.uvtracker.data.optical.SampleTimestamp;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
+import app.uvtracker.sensor.pii.connection.application.event.SyncDataReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.SyncProgressEvent;
 import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.IEventListener;
@@ -89,13 +91,6 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     }
 
     @EventHandler // Source: ISensorConnection
-    public void onSyncProgress(SyncProgressEvent event) {
-        String status = "Sync: " + event.getStage() + ": " + event.getProgress();
-        Log.d(TAG, ">>> Callback: " + status);
-        this.updateStatus(">>> " + status);
-    }
-
-    @EventHandler // Source: ISensorConnection
     public void onNewSampleReceived(NewSampleReceivedEvent event) {
         TextView text = this.findViewById(R.id.sensor_txt_meas1);
         text.setText("Data " + event.getSeconds() + ": " + event.getRecord());
@@ -105,6 +100,18 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     public void onNewEstimationReceived(NewEstimationReceivedEvent event) {
         TextView text = this.findViewById(R.id.sensor_txt_meas2);
         text.setText("Estimation " + event.getSampleNumber() + ": " + event.getRecord() + " (Int. " + event.getSampleInterval() + ")");
+    }
+
+    @EventHandler // Source: ISensorConnection
+    public void onSyncProgress(SyncProgressEvent event) {
+        String status = "Sync: " + event.getStage() + ": " + event.getProgress();
+        Log.d(TAG, ">>> Callback: " + status);
+        this.updateStatus(">>> " + status);
+    }
+
+    @EventHandler // Source: ISensorConnection
+    public void onSyncData(SyncDataReceivedEvent event) {
+        Log.d(TAG, "[DATA] " + event.getTime() + " " + event.getRecord());
     }
 
     private void updateStatus(String msg) {

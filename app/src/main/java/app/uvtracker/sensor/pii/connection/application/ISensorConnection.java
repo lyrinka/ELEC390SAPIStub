@@ -1,8 +1,5 @@
 package app.uvtracker.sensor.pii.connection.application;
 
-import androidx.annotation.NonNull;
-
-import app.uvtracker.data.optical.cache.IOpticalDataCacheReader;
 import app.uvtracker.sensor.pii.connection.shared.IConnectable;
 
 public interface ISensorConnection extends IConnectable {
@@ -14,14 +11,13 @@ public interface ISensorConnection extends IConnectable {
 
     /* -------- Sync features -------- */
 
-    // Emits event: SyncProgressEvent
-
-    @NonNull
-    IOpticalDataCacheReader getOpticalDataCacheReader();
+    // Emits event: SyncProgressEvent, SyncDataReceivedEvent
 
     boolean isSyncing();
 
     boolean startSync();
+
+    boolean forceSync();
 
     boolean abortSync();
 
