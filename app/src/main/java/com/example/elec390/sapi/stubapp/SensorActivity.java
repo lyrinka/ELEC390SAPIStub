@@ -115,7 +115,12 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
     @EventHandler // Source: ISensorConnection
     public void onSyncData(SyncDataReceivedEvent event) {
         List<TimedRecord<OpticalRecord>> data = event.getData();
-        Log.d(TAG, String.format("[DATA] Size: %d. First: %s. Last: %s.", data.size(), data.get(0), data.get(data.size() - 1)));
+        if(data.size() == 0) {
+            Log.d(TAG, "[DATA] Size: 0.");
+        }
+        else {
+            Log.d(TAG, String.format("[DATA] Size: %d. First: %s. Last: %s.", data.size(), data.get(0), data.get(data.size() - 1)));
+        }
     }
 
     private void updateStatus(String msg) {

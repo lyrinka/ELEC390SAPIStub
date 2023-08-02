@@ -264,14 +264,13 @@ class SyncManager implements IEventListener {
         for(int i = count - 1; i >= 0; i--) {
             OpticalRecord record = packet.getRecords()[i];
             if(!record.valid) {
-                Log.d(TAG, "Received invalid record " + first + ". This may be a race condition and not a bug.");
+                Log.d(TAG, "Received invalid record " + (first + i) + ". This may be a normal race condition and not a bug.");
                 continue;
             }
             TimedRecord<OpticalRecord> sample = new TimedRecord<>(record, this.deviceBootTime, first + i, this.sampleInterval);
             list.add(sample);
         }
         this.progressInfoCount += count;
-
         this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.PROCESSING, Math.round((float)this.progressInfoCount / (float)this.progressInfoTotalCount * 100.0f)));
         this.connection.dispatch(new SyncDataReceivedEvent(list));
         this.processSync(false);
@@ -292,8 +291,13 @@ class SyncManager implements IEventListener {
 
         if(firstTime) {
             int count = 0;
-            if(first < this.firstSample) count += this.firstSample - first;
-            if(last > this.lastSample) count += last - this.lastSample;
+            if(this.firstSample < 0 || this.lastSample < 0) {
+                count = last - first + 1;
+            }
+            else {
+                if (first < this.firstSample) count += this.firstSample - first;
+                if (last > this.lastSample) count += last - this.lastSample;
+            }
             this.progressInfoTotalCount = count;
         }
 
