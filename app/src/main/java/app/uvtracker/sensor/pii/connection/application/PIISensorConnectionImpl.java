@@ -282,7 +282,7 @@ class SyncManager implements IEventListener {
             Log.d(TAG, "Device boot time: " + new Date(this.deviceBootTime));
         }
         this.latestSyncInfo = packet;
-        this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.INITIATING));
+        this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.PROCESSING, 0));
         this.progressInfoCount = 0;
         this.processSync(true);
     }
