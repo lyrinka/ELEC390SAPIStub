@@ -12,11 +12,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import app.uvtracker.data.battery.BatteryRecord;
 import app.uvtracker.data.optical.OpticalRecord;
 import app.uvtracker.data.optical.TimedOpticalRecord;
 import app.uvtracker.sensor.BLEOptions;
 import app.uvtracker.sensor.pii.ISensor;
-import app.uvtracker.sensor.pii.connection.application.event.BatteryInfoEvent;
+import app.uvtracker.sensor.pii.connection.application.event.NewBatteryInfoReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.SyncDataReceivedEvent;
@@ -107,13 +108,13 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
     }
 
     // TODO: any better way to propagate these events up?
-    @EventHandler
+    @EventHandler // Source: IConnectable
     protected void onConnectionStateChange(@NonNull ConnectionStateChangeEvent event) {
         this.dispatch(event);
     }
 
     // Packet event registry
-    @EventHandler
+    @EventHandler // Source: ISensorPacketConnection
     protected void onParsedPacketReception(@NonNull ParsedPacketReceivedEvent event) {
         this.packetEventRegistry.dispatch(event.getPacket());
     }
@@ -124,23 +125,22 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
     }
 
     // Packet handling
-    @EventHandler
+    @EventHandler // Source: PacketEventRegistry
     protected void onPacketInNewOpticalSample(PacketInNewOpticalSample packet) {
         this.latestDataStorage.sample = packet.getRecord();
         this.dispatch(new NewSampleReceivedEvent(packet));
     }
 
-    @EventHandler
+    @EventHandler // Source: PacketEventRegistry
     protected void onPacketInNewOpticalEstimation(PacketInNewOpticalEstimation packet) {
         this.latestDataStorage.estimation = packet.getRecord();
         this.dispatch(new NewEstimationReceivedEvent(packet));
     }
 
-    @EventHandler
+    @EventHandler // Source: PacketEventRegistry
     protected void onPacketInBatteryInfo(PacketInBatteryInfo packet) {
-        this.latestDataStorage.battVoltage = packet.getBattertVoltage();
-        this.latestDataStorage.battPercentage = packet.getBatteryPercentage();
-        this.dispatch(new BatteryInfoEvent(packet));
+        this.latestDataStorage.batteryRecord = packet.getRecord();
+        this.dispatch(new NewBatteryInfoReceivedEvent(packet));
     }
 
     // Data getters
@@ -159,14 +159,8 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
 
     @Nullable
     @Override
-    public Float getLatestBatteryVoltage() {
-        return this.latestDataStorage.battVoltage;
-    }
-
-    @Nullable
-    @Override
-    public Integer getLatestBatteryPercentage() {
-        return this.latestDataStorage.battPercentage;
+    public BatteryRecord getLatestBatteryRecord() {
+        return this.latestDataStorage.batteryRecord;
     }
 
 }
@@ -180,10 +174,7 @@ class LatestDataStorage {
     public OpticalRecord estimation;
 
     @Nullable
-    public Float battVoltage;
-
-    @Nullable
-    public Integer battPercentage;
+    public BatteryRecord batteryRecord;
 
 }
 
