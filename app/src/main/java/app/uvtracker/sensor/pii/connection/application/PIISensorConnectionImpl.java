@@ -16,6 +16,7 @@ import app.uvtracker.data.optical.OpticalRecord;
 import app.uvtracker.data.optical.TimedRecord;
 import app.uvtracker.sensor.BLEOptions;
 import app.uvtracker.sensor.pii.ISensor;
+import app.uvtracker.sensor.pii.connection.application.event.BatteryInfoEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewEstimationReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.NewSampleReceivedEvent;
 import app.uvtracker.sensor.pii.connection.application.event.SyncDataReceivedEvent;
@@ -27,6 +28,7 @@ import app.uvtracker.sensor.pii.event.EventHandler;
 import app.uvtracker.sensor.pii.event.EventRegistry;
 import app.uvtracker.sensor.pii.event.IEventListener;
 import app.uvtracker.sensor.pii.event.IEventSource;
+import app.uvtracker.sensor.protocol.packet.in.PacketInBatteryInfo;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalEstimation;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalSample;
 import app.uvtracker.sensor.protocol.packet.in.PacketInSyncData;
@@ -43,11 +45,15 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
     private final EventRegistry packetEventRegistry;
 
     @NonNull
+    private final LatestDataStorage latestDataStorage;
+
+    @NonNull
     private final SyncManager syncManager;
 
     public PIISensorConnectionImpl(@NonNull ISensorPacketConnection baseConnection) {
         this.packetEventRegistry = new EventRegistry();
         this.baseConnection = baseConnection;
+        this.latestDataStorage = new LatestDataStorage();
         this.syncManager = new SyncManager(this);
         this.baseConnection.registerListener(this);
         this.packetEventRegistry.registerListener(this);
@@ -120,13 +126,64 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
     // Packet handling
     @EventHandler
     protected void onPacketInNewOpticalSample(PacketInNewOpticalSample packet) {
+        this.latestDataStorage.sample = packet.getRecord();
         this.dispatch(new NewSampleReceivedEvent(packet));
     }
 
     @EventHandler
     protected void onPacketInNewOpticalEstimation(PacketInNewOpticalEstimation packet) {
+        this.latestDataStorage.estimation = packet.getRecord();
         this.dispatch(new NewEstimationReceivedEvent(packet));
     }
+
+    @EventHandler
+    protected void onPacketInBatteryInfo(PacketInBatteryInfo packet) {
+        this.latestDataStorage.battVoltage = packet.getBattertVoltage();
+        this.latestDataStorage.battPercentage = packet.getBatteryPercentage();
+        this.dispatch(new BatteryInfoEvent(packet));
+    }
+
+    // Data getters
+
+    @Nullable
+    @Override
+    public OpticalRecord getLatestSample() {
+        return this.latestDataStorage.sample;
+    }
+
+    @Nullable
+    @Override
+    public OpticalRecord getLatestEstimation() {
+        return this.latestDataStorage.estimation;
+    }
+
+    @Nullable
+    @Override
+    public Float getLatestBatteryVoltage() {
+        return this.latestDataStorage.battVoltage;
+    }
+
+    @Nullable
+    @Override
+    public Integer getLatestBatteryPercentage() {
+        return this.latestDataStorage.battPercentage;
+    }
+
+}
+
+class LatestDataStorage {
+
+    @Nullable
+    public OpticalRecord sample;
+
+    @Nullable
+    public OpticalRecord estimation;
+
+    @Nullable
+    public Float battVoltage;
+
+    @Nullable
+    public Integer battPercentage;
 
 }
 
@@ -264,14 +321,13 @@ class SyncManager implements IEventListener {
         for(int i = count - 1; i >= 0; i--) {
             OpticalRecord record = packet.getRecords()[i];
             if(!record.valid) {
-                Log.d(TAG, "Received invalid record " + first + ". This may be a race condition and not a bug.");
+                Log.d(TAG, "Received invalid record " + (first + i) + ". This may be a normal race condition and not a bug.");
                 continue;
             }
             TimedRecord<OpticalRecord> sample = new TimedRecord<>(record, this.deviceBootTime, first + i, this.sampleInterval);
             list.add(sample);
         }
         this.progressInfoCount += count;
-
         this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.PROCESSING, Math.round((float)this.progressInfoCount / (float)this.progressInfoTotalCount * 100.0f)));
         this.connection.dispatch(new SyncDataReceivedEvent(list));
         this.processSync(false);
@@ -292,11 +348,17 @@ class SyncManager implements IEventListener {
 
         if(firstTime) {
             int count = 0;
-            if(first < this.firstSample) count += this.firstSample - first;
-            if(last > this.lastSample) count += last - this.lastSample;
+            if(this.firstSample < 0 || this.lastSample < 0) {
+                count = last - first + 1;
+            }
+            else {
+                if (first < this.firstSample) count += this.firstSample - first;
+                if (last > this.lastSample) count += last - this.lastSample;
+            }
             this.progressInfoTotalCount = count;
         }
 
+        //noinspection StatementWithEmptyBody
         if(this.firstSample < 0 || this.lastSample < 0) {
             // IF statement left empty on-purpose
             // to stop ELSE statement from processing this case

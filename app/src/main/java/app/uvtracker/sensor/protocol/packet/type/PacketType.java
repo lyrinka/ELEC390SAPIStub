@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import app.uvtracker.sensor.protocol.packet.base.Packet;
+import app.uvtracker.sensor.protocol.packet.in.PacketInBatteryInfo;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalEstimation;
 import app.uvtracker.sensor.protocol.packet.in.PacketInNewOpticalSample;
 import app.uvtracker.sensor.protocol.packet.in.PacketInSyncData;
@@ -20,7 +21,8 @@ public interface PacketType {
 
     enum IN implements PacketType {
 
-        // System: 0x00 ~ 0x1F
+        // System: 0x00 ~ 0x0F
+        BATTERY_INFO                (0x0F, PacketInBatteryInfo.class),
         // HMI: 0x10 ~ 0x2F
         // Data: 0x20 ~ 0x3F
         NEW_OPTICAL_SAMPLE          (0x20, PacketInNewOpticalSample.class),
@@ -77,7 +79,7 @@ public interface PacketType {
 
     enum OUT implements PacketType {
 
-        // System: 0x00 ~ 0x1F
+        // System: 0x00 ~ 0x0F
         // HMI: 0x10 ~ 0x2F
         // Data: 0x20 ~ 0x3F
         REQUEST_SYNC_INFO           (0x22, PacketOutRequestSyncInfo.class),
