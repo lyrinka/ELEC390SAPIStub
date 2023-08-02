@@ -14,7 +14,7 @@ public interface ISensorConnection extends IConnectable {
 
     /* -------- Sync features -------- */
 
-    // Emits event: SyncProgressEvent, SyncDataReceivedEvent
+    // Emits event: SyncProgressChangedEvent, SyncDataReceivedEvent
 
     boolean isSyncing();
 
@@ -25,7 +25,7 @@ public interface ISensorConnection extends IConnectable {
     boolean abortSync();
 
 
-    // Best-effort data getters
+    /* -------- Best-effort data getters -------- */
 
     @Nullable
     OpticalRecord getLatestSample();

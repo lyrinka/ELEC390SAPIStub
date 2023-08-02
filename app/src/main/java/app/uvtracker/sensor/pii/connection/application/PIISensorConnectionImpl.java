@@ -358,6 +358,7 @@ class SyncManager implements IEventListener {
             this.progressInfoTotalCount = count;
         }
 
+        //noinspection StatementWithEmptyBody
         if(this.firstSample < 0 || this.lastSample < 0) {
             // IF statement left empty on-purpose
             // to stop ELSE statement from processing this case
