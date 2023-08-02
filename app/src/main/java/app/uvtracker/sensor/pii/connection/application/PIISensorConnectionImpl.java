@@ -45,11 +45,15 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
     private final EventRegistry packetEventRegistry;
 
     @NonNull
+    private final LatestDataStorage latestDataStorage;
+
+    @NonNull
     private final SyncManager syncManager;
 
     public PIISensorConnectionImpl(@NonNull ISensorPacketConnection baseConnection) {
         this.packetEventRegistry = new EventRegistry();
         this.baseConnection = baseConnection;
+        this.latestDataStorage = new LatestDataStorage();
         this.syncManager = new SyncManager(this);
         this.baseConnection.registerListener(this);
         this.packetEventRegistry.registerListener(this);
@@ -122,18 +126,64 @@ public class PIISensorConnectionImpl extends EventRegistry implements ISensorCon
     // Packet handling
     @EventHandler
     protected void onPacketInNewOpticalSample(PacketInNewOpticalSample packet) {
+        this.latestDataStorage.sample = packet.getRecord();
         this.dispatch(new NewSampleReceivedEvent(packet));
     }
 
     @EventHandler
     protected void onPacketInNewOpticalEstimation(PacketInNewOpticalEstimation packet) {
+        this.latestDataStorage.estimation = packet.getRecord();
         this.dispatch(new NewEstimationReceivedEvent(packet));
     }
 
     @EventHandler
     protected void onPacketInBatteryInfo(PacketInBatteryInfo packet) {
+        this.latestDataStorage.battVoltage = packet.getBattertVoltage();
+        this.latestDataStorage.battPercentage = packet.getBatteryPercentage();
         this.dispatch(new BatteryInfoEvent(packet));
     }
+
+    // Data getters
+
+    @Nullable
+    @Override
+    public OpticalRecord getLatestSample() {
+        return this.latestDataStorage.sample;
+    }
+
+    @Nullable
+    @Override
+    public OpticalRecord getLatestEstimation() {
+        return this.latestDataStorage.estimation;
+    }
+
+    @Nullable
+    @Override
+    public Float getLatestBatteryVoltage() {
+        return this.latestDataStorage.battVoltage;
+    }
+
+    @Nullable
+    @Override
+    public Integer getLatestBatteryPercentage() {
+        return this.latestDataStorage.battPercentage;
+    }
+
+}
+
+class LatestDataStorage {
+
+    @Nullable
+    public OpticalRecord sample;
+
+    @Nullable
+    public OpticalRecord estimation;
+
+    @Nullable
+    public Float battVoltage;
+
+    @Nullable
+    public Integer battPercentage;
 
 }
 
