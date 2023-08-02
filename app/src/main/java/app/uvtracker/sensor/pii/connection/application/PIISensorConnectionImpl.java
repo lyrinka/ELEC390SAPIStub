@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 
 import app.uvtracker.data.optical.OpticalRecord;
-import app.uvtracker.data.optical.TimedRecord;
+import app.uvtracker.data.optical.TimedOpticalRecord;
 import app.uvtracker.sensor.BLEOptions;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.event.BatteryInfoEvent;
@@ -317,14 +317,14 @@ class SyncManager implements IEventListener {
             if(last > this.lastSample) this.lastSample = last;
         }
 
-        List<TimedRecord<OpticalRecord>> list = new ArrayList<>(count);
+        List<TimedOpticalRecord> list = new ArrayList<>(count);
         for(int i = count - 1; i >= 0; i--) {
             OpticalRecord record = packet.getRecords()[i];
             if(!record.valid) {
                 Log.d(TAG, "Received invalid record " + (first + i) + ". This may be a normal race condition and not a bug.");
                 continue;
             }
-            TimedRecord<OpticalRecord> sample = new TimedRecord<>(record, this.deviceBootTime, first + i, this.sampleInterval);
+            TimedOpticalRecord sample = new TimedOpticalRecord(record, this.deviceBootTime, first + i, this.sampleInterval);
             list.add(sample);
         }
         this.progressInfoCount += count;

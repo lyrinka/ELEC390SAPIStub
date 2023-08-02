@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 
 import app.uvtracker.data.optical.OpticalRecord;
-import app.uvtracker.data.optical.TimedRecord;
+import app.uvtracker.data.optical.TimedOpticalRecord;
 import app.uvtracker.sensor.pii.ISensor;
 import app.uvtracker.sensor.pii.connection.application.ISensorConnection;
 import app.uvtracker.sensor.pii.connection.application.event.BatteryInfoEvent;
@@ -121,7 +121,7 @@ public class SensorActivity extends AppCompatActivity implements IEventListener 
 
     @EventHandler // Source: ISensorConnection
     public void onSyncData(SyncDataReceivedEvent event) {
-        List<TimedRecord<OpticalRecord>> data = event.getData();
+        List<TimedOpticalRecord> data = event.getData();
         if(data.size() == 0) {
             Log.d(TAG, ">>> Data size: 0.");
         }
