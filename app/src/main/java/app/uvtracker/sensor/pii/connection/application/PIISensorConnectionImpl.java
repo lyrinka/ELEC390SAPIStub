@@ -323,6 +323,8 @@ class SyncManager implements IEventListener {
             list.add(sample);
         }
         this.progressInfoCount += count;
+        if(list.size() == 0) Log.d(TAG, "Data size: 0.");
+        else Log.d(TAG, String.format("Data size: %d; first: %s; last: %s.", list.size(), list.get(0), list.get(list.size() - 1)));
         this.connection.dispatch(new SyncProgressChangedEvent(SyncProgressChangedEvent.Stage.PROCESSING, Math.round((float)this.progressInfoCount / (float)this.progressInfoTotalCount * 100.0f)));
         this.handler.post(() -> this.connection.dispatch(new SyncDataReceivedEvent(list)));
         this.processSync(false);
