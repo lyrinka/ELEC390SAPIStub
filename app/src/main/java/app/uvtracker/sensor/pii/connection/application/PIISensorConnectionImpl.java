@@ -278,7 +278,7 @@ class SyncManager implements IEventListener {
         Log.d(TAG, "Processing sync info packet...");
         if(this.latestSyncInfo == null) {
             this.sampleInterval = packet.getSampleInterval();
-            this.deviceBootTime = new Date().getTime() - (long) packet.getSampleCount() * packet.getSampleInterval() * 1000 - packet.getCurrentSecondCounter();
+            this.deviceBootTime = new Date().getTime() - (long) (packet.getSampleStart() + packet.getSampleCount()) * packet.getSampleInterval() * 1000 - packet.getCurrentSecondCounter();
             Log.d(TAG, "Device boot time: " + new Date(this.deviceBootTime));
         }
         this.latestSyncInfo = packet;
